@@ -1,0 +1,919 @@
+{
+  "_license": "SPDX-License-Identifier: MIT — By Shimon Shmueli",
+  "version": "0.2.0",
+  "envs": [
+    { "id": "desktop", "label": "Desktop",  "color": "amber",   "hint": "Mac/Windows app" },
+    { "id": "cli",     "label": "CLI",      "color": "emerald", "hint": "Terminal" },
+    { "id": "vscode",  "label": "VS Code",  "color": "sky",     "hint": "Extension" },
+    { "id": "cursor",  "label": "Cursor",   "color": "violet",  "hint": "Cursor IDE + CLI in its terminal" }
+  ],
+  "levels": [
+    { "id": "beginner", "label": "Beginner", "color": "emerald" },
+    { "id": "mid",      "label": "Mid",      "color": "amber" },
+    { "id": "pro",      "label": "Pro",      "color": "rose" }
+  ],
+  "categories": [
+    {
+      "id": "getting-started",
+      "title": "Getting started",
+      "icon": "rocket",
+      "description": "Installing Claude Code, signing in, starting your first session, and keeping the install healthy.",
+      "items": [
+        {
+          "id": "install",
+          "title": "Install Claude Code",
+          "level": "beginner",
+          "summary": "Install the CLI and/or the IDE/desktop app.",
+          "details": "Claude Code ships as a CLI (npm), a Mac/Windows desktop app, and IDE extensions for VS Code and JetBrains. The same account works across all of them.",
+          "tags": ["install", "setup", "npm"],
+          "envExamples": {
+            "cli": [
+              { "lang": "bash", "code": "curl -fsSL https://claude.ai/install.sh | sh", "note": "macOS / Linux / WSL one-liner — no Node prerequisite." },
+              { "lang": "bash", "code": "npm install -g @anthropic-ai/claude-code",     "note": "Cross-platform (any OS with Node 18+)." },
+              { "lang": "bash", "code": "claude --version",                              "note": "Verify the install." }
+            ],
+            "vscode": { "lang": "text", "code": "Extensions panel → search “Claude Code” → Install → sign in.", "note": "Same backend as the CLI." },
+            "cursor": { "lang": "bash", "code": "# Use the CLI in Cursor's terminal\nnpm install -g @anthropic-ai/claude-code\nclaude", "note": "Cursor's own AI is a separate product." },
+            "desktop": { "lang": "text", "code": "Download from claude.com/claude-code → install → sign in.", "note": "Pairs with your local file system on first launch." }
+          }
+        },
+        {
+          "id": "auth",
+          "title": "Sign in: Pro vs API",
+          "level": "beginner",
+          "summary": "Two billing paths — Claude Pro/Max subscription, or Anthropic API credits.",
+          "details": "claude.ai login routes through Pro/Max. API key login (from console.anthropic.com) bills per-token. They're separate — Pro elsewhere doesn't auto-route Claude Code through Pro. Use /status to verify.",
+          "pitfalls": "Most common surprise: being charged API credits when you have a Pro/Max subscription. Run /status the first time you set up — Pro on claude.ai doesn't automatically apply to Claude Code unless you signed in with that account.",
+          "tags": ["auth", "billing", "pro", "max", "api"],
+          "examples": [
+            { "lang": "text", "code": "/login",  "note": "Pick a Pro/Max account or paste an API key. Switches at any time." },
+            { "lang": "text", "code": "/status", "note": "Confirms which account/auth path is active." }
+          ]
+        },
+        {
+          "id": "first-session",
+          "title": "Start your first session",
+          "level": "beginner",
+          "summary": "Always launch from the project root — that becomes Claude's context.",
+          "details": "The current working directory becomes the project context: file reads, edits, and shell commands are scoped to that tree. Run /init first to scaffold a CLAUDE.md.",
+          "tags": ["session", "cwd"],
+          "envExamples": {
+            "cli": [
+              { "lang": "bash", "code": "cd ~/code/my-project && claude",         "note": "Default: launches an interactive session in this folder." },
+              { "lang": "bash", "code": "claude \"summarize this project\"",       "note": "With an initial prompt — Claude starts with that instead of an empty REPL." },
+              { "lang": "bash", "code": "claude --model haiku",                    "note": "Pick a model at launch (haiku / sonnet / opus). Switch later with /model." }
+            ],
+            "vscode": { "lang": "text", "code": "Open folder → click Claude icon → start chatting.", "note": "Workspace folder = context." },
+            "cursor": { "lang": "bash", "code": "cd ~/code/my-project && claude", "note": "Run from Cursor's terminal." },
+            "desktop": { "lang": "text", "code": "File → Open Folder → New session.", "note": "Launcher remembers recent folders." }
+          }
+        },
+        {
+          "id": "update",
+          "title": "Update Claude Code",
+          "level": "beginner",
+          "summary": "Auto-updates by default; force a check with the npm package.",
+          "details": "The CLI auto-updates in the background. Disable with the env var DISABLE_AUTOUPDATER=1 if you want to pin a version. IDE extensions update through the marketplace.",
+          "pitfalls": "Auto-updates can change behavior mid-session. If you're shipping something time-sensitive or recording a demo, pin with DISABLE_AUTOUPDATER=1 in your env first.",
+          "tags": ["update", "version"],
+          "examples": [
+            { "lang": "bash", "code": "claude --version",                          "note": "Check the installed version." },
+            { "lang": "bash", "code": "npm i -g @anthropic-ai/claude-code",        "note": "Force a fresh install." },
+            { "lang": "bash", "code": "DISABLE_AUTOUPDATER=1 claude",              "note": "Pin: skip the background auto-update for this session." }
+          ]
+        },
+        {
+          "id": "no-flicker",
+          "title": "CLAUDE_CODE_NO_FLICKER",
+          "level": "beginner",
+          "envs": ["cli", "cursor"],
+          "summary": "Smoother terminal rendering — output streams line-by-line without screen redraws.",
+          "details": "Set this env var (export it in your shell rc) to disable Claude Code's full-screen redraws in the terminal. Output flows linearly instead of repainting; easier on eyes, easier to scrollback through, easier to record.",
+          "tags": ["env", "terminal", "rendering"],
+          "examples": [
+            { "lang": "bash", "code": "export CLAUDE_CODE_NO_FLICKER=1",                                        "note": "One session — set and re-run claude." },
+            { "lang": "bash", "code": "echo 'export CLAUDE_CODE_NO_FLICKER=1' >> ~/.zshrc && source ~/.zshrc",  "note": "Persist for every shell. Swap ~/.zshrc for ~/.bashrc on bash." }
+          ]
+        },
+        {
+          "id": "doctor",
+          "title": "Diagnose problems: /doctor",
+          "level": "mid",
+          "summary": "One command to surface install, network, and permission issues.",
+          "details": "Run when something feels off — wrong account, missing tools, network errors. /doctor reports Node version, install path, auth state, and config file locations.",
+          "tags": ["doctor", "diagnose", "troubleshoot"],
+          "example": { "lang": "text", "code": "/doctor", "note": "Always paste this output when filing a bug." }
+        }
+      ]
+    },
+
+    {
+      "id": "modes",
+      "title": "Sessions & modes",
+      "icon": "layers",
+      "description": "How sessions work and the modes you can run them in — interactive REPL, plan-only, auto-accept, and headless one-shot.",
+      "items": [
+        {
+          "id": "interactive",
+          "title": "Interactive mode",
+          "level": "beginner",
+          "summary": "The default — back-and-forth REPL with tools and file edits.",
+          "details": "Type messages, Claude can read files, run commands, edit code, search the web. Multi-line input via Shift+Enter (or paste). Esc to interrupt.",
+          "tags": ["session"],
+          "example": { "lang": "bash", "code": "$ claude\n> add a /healthz endpoint and a test for it", "note": "Esc interrupts. Ctrl+C quits." }
+        },
+        {
+          "id": "plan-mode",
+          "title": "Plan mode",
+          "level": "mid",
+          "summary": "Read-only — Claude proposes a plan but won't edit until you approve.",
+          "details": "Use for non-trivial features or refactors. Plan mode disables Edit/Write/Bash. Cycle modes with Shift+Tab: Default → Accept Edits → Plan.",
+          "tags": ["plan", "safety"],
+          "example": { "lang": "text", "code": "Shift+Tab → Plan mode\n> design how to add OAuth — don't implement\n→ approve the plan to leave Plan mode", "note": "Or type /plan to enter directly." }
+        },
+        {
+          "id": "auto-accept",
+          "title": "Accept Edits mode",
+          "level": "mid",
+          "summary": "Auto-approve file edits for the rest of the session.",
+          "details": "Skips the per-edit confirmation. Shell commands and risky tools still ask. Useful when you trust the trajectory and want to stop clicking yes.",
+          "tags": ["accept-edits", "permissions"],
+          "example": { "lang": "text", "code": "Shift+Tab once → Accept Edits\n(Edit/Write tools auto-approve; Bash still asks)", "note": "Cycle off with another Shift+Tab." }
+        },
+        {
+          "id": "print-mode",
+          "title": "Print / headless mode (-p)",
+          "level": "mid",
+          "envs": ["cli", "cursor"],
+          "summary": "One-shot, non-interactive — perfect for scripting and CI.",
+          "details": "claude -p \"prompt\" runs the prompt, prints to stdout, exits. Inherits CLAUDE.md and settings. Combine with --output-format json for parseable results.",
+          "pitfalls": "Inherits CLAUDE.md and the full settings stack — so the same prompt can behave differently in CI than on your laptop. Always specify --permission-mode and --max-turns explicitly in CI; otherwise a hidden interactive prompt can hang the run.",
+          "tags": ["headless", "scripting", "ci"],
+          "examples": [
+            { "lang": "bash", "code": "claude -p \"summarize CHANGELOG.md in 3 bullets\"",                "note": "One-shot. Stdout is the answer." },
+            { "lang": "bash", "code": "claude -p \"is this diff safe?\" --output-format json | jq .result", "note": "Pipe-friendly: parseable JSON output." }
+          ]
+        },
+        {
+          "id": "resume",
+          "title": "Resume a session",
+          "level": "mid",
+          "summary": "Pick up where you left off — full context restored.",
+          "details": "claude --continue (or -c) reopens the last session in the cwd. claude --resume opens an interactive picker. You can resume in headless mode too.",
+          "tags": ["resume", "continue", "session"],
+          "examples": [
+            { "lang": "bash", "code": "claude --continue",                "note": "Continue the last session in this folder. Sessions are scoped per-folder." },
+            { "lang": "bash", "code": "claude --resume",                  "note": "Open the interactive picker to choose a past session." },
+            { "lang": "bash", "code": "claude -c -p \"now write tests\"",   "note": "Resume + headless: continue silently and run a one-shot prompt." }
+          ]
+        },
+        {
+          "id": "max-turns",
+          "title": "--max-turns / --max-budget-usd",
+          "level": "pro",
+          "envs": ["cli", "cursor"],
+          "summary": "Bound how many turns — or how many dollars — a headless run may use.",
+          "details": "Two complementary caps for headless mode. `--max-turns N` limits the number of agentic turns; `--max-budget-usd X` limits cumulative cost in USD. Either condition triggers a clean exit. Use both in CI to prevent runaway loops.",
+          "pitfalls": "Both exit the moment the cap hits — even mid-tool-call. Design prompts so the work-in-progress at any cutoff is still useful (e.g. produce a partial diff and a TODO list, not just the final answer).",
+          "tags": ["headless", "ci", "safety", "budget"],
+          "examples": [
+            { "lang": "bash", "code": "claude -p \"refactor utils.ts\" --max-turns 6",          "note": "Bound the number of agentic turns." },
+            { "lang": "bash", "code": "claude -p \"fix the failing tests\" --max-budget-usd 2",  "note": "Bound cumulative cost (USD). Either cap triggers exit." }
+          ]
+        },
+        {
+          "id": "system-prompt",
+          "title": "Custom system prompt",
+          "level": "pro",
+          "envs": ["cli", "cursor"],
+          "summary": "Override or append to the default Claude Code system prompt.",
+          "details": "--system-prompt replaces the default. --append-system-prompt adds to it. Use sparingly — Claude Code's default prompt encodes a lot of safety and tool-use behavior.",
+          "tags": ["system-prompt", "headless"],
+          "example": { "lang": "bash", "code": "claude -p \"check x\" --append-system-prompt \"Always reply in JSON.\"", "note": "Often paired with stream-json output for orchestrators." }
+        }
+      ]
+    },
+
+    {
+      "id": "slash-commands",
+      "title": "Slash commands",
+      "icon": "terminal",
+      "description": "Built-in commands typed with a leading / inside a session — control the session, inspect state, manage memory, run workflows.",
+      "items": [
+        { "id": "help",    "title": "/help",    "level": "beginner", "summary": "List commands, shortcuts, and active skills.", "details": "Your first stop when you forget something.", "tags": ["help"],   "example": { "lang": "text", "code": "/help", "note": "" } },
+        { "id": "clear",   "title": "/clear",   "level": "beginner", "summary": "Wipe the current conversation; memory and CLAUDE.md remain.", "details": "Resets context only — settings, memory, and connections survive.", "pitfalls": "Doesn't clear CLAUDE.md or settings. If Claude is still doing something you didn't ask for after /clear, the rule lives in CLAUDE.md (or a hook), not the conversation.", "tags": ["clear"],  "example": { "lang": "text", "code": "/clear", "note": "Aliases: /reset, /new" } },
+        { "id": "exit",    "title": "/exit",    "level": "beginner", "summary": "Quit the session.", "details": "Same as Ctrl+C on an empty prompt.", "tags": ["exit"],   "example": { "lang": "text", "code": "/exit", "note": "Alias: /quit" } },
+        { "id": "btw",     "title": "/btw",     "level": "mid", "summary": "Ask a quick side question without consuming main context.", "details": "Spawns an isolated mini-conversation: ask, get an answer, return to your main session unchanged. Great for a one-off lookup mid-task without blowing your context budget.", "tags": ["btw", "context", "side-question"], "example": { "lang": "text", "code": "/btw what does Bash(*:!rm) actually match?", "note": "The reply doesn't enter your main conversation history." } },
+        { "id": "simplify","title": "/simplify","level": "mid", "summary": "Built-in skill: review recently changed files for quality and efficiency.", "details": "Bundled skill that scans your recent edits and proposes simpler, cleaner alternatives — dead code, redundant abstractions, naming that drifted. Pairs nicely with /review.", "tags": ["simplify", "skills", "review"], "example": { "lang": "text", "code": "/simplify", "note": "Lists items with file:line and a one-sentence rationale per suggestion." } },
+        { "id": "init",    "title": "/init",    "level": "beginner", "summary": "Generate a CLAUDE.md by analyzing the current repo.", "details": "Writes a project-level CLAUDE.md with build/test/lint commands and architectural notes.", "pitfalls": "The generated CLAUDE.md is a first draft, not the finished article. Edit before relying on it — early passes often miss your real conventions and include generic advice you don't actually want enforced.", "tags": ["init", "memory"], "example": { "lang": "text", "code": "/init", "note": "Edit the result — first pass is a starting point." } },
+        { "id": "status",  "title": "/status",  "level": "beginner", "summary": "Show account, model, working dir, and session info.", "details": "Quickest way to confirm Pro vs API and which model is active.", "tags": ["status"], "example": { "lang": "text", "code": "/status", "note": "" } },
+
+        { "id": "compact", "title": "/compact", "level": "mid", "summary": "Summarize old turns to free up context.", "details": "Replaces older turns with a condensed summary. Optional argument biases the summary toward a topic.", "pitfalls": "Auto-compaction near the context limit can drop details Claude needed mid-task. If a session feels suddenly amnesiac, /context shows what survived; rebuild critical info with #-memory or @-references rather than re-explaining.", "tags": ["context", "compact"], "examples": [
+          { "lang": "text", "code": "/compact",                              "note": "Default: summarize older turns. Auto-runs near the context limit." },
+          { "lang": "text", "code": "/compact focus on the auth refactor",    "note": "Bias the summary toward a topic." }
+        ] },
+        { "id": "model",   "title": "/model",   "level": "mid", "summary": "Switch between Opus, Sonnet, and Haiku mid-session.", "details": "Opus = strongest, Sonnet = great default, Haiku = fastest/cheapest. Switching keeps context.", "tags": ["model"], "examples": [
+          { "lang": "text", "code": "/model",       "note": "Opens the picker." },
+          { "lang": "text", "code": "/model opus",  "note": "Set the model directly without the picker." }
+        ] },
+        { "id": "memory",  "title": "/memory",  "level": "mid", "summary": "Open or edit the CLAUDE.md files in scope.", "details": "Quick access to project + user CLAUDE.md without leaving the session.", "tags": ["memory"], "example": { "lang": "text", "code": "/memory", "note": "Use # at the start of a message for a one-off save." } },
+        { "id": "review",  "title": "/review",  "level": "mid", "summary": "Review the current diff or a GitHub PR.", "details": "Without args, reviews uncommitted changes. With a PR number, fetches and reviews that PR.", "tags": ["review", "pr"], "examples": [
+          { "lang": "text", "code": "/review",       "note": "Review the local diff (uncommitted changes)." },
+          { "lang": "text", "code": "/review 1234",  "note": "Fetch GitHub PR #1234 and review it. Pairs well with /security-review." }
+        ] },
+        { "id": "agents",  "title": "/agents",  "level": "mid", "summary": "List, create, and edit sub-agents.", "details": "Browse built-in agents (Explore, Plan, general-purpose) and your own from .claude/agents/.", "tags": ["agents"], "example": { "lang": "text", "code": "/agents", "note": "" } },
+        { "id": "mcp",     "title": "/mcp",     "level": "mid", "summary": "Manage MCP server connections.", "details": "Show connected servers, their tools, and re-authenticate or restart them.", "tags": ["mcp"], "example": { "lang": "text", "code": "/mcp", "note": "" } },
+        { "id": "skills",  "title": "/skills",  "level": "mid", "summary": "List skills available in this session.", "details": "Includes built-in skills and your own from .claude/skills/. Skills can also auto-activate.", "tags": ["skills"], "example": { "lang": "text", "code": "/skills", "note": "" } },
+        { "id": "config",  "title": "/config",  "level": "mid", "summary": "Open settings.json in your editor.", "details": "Picks the right scope (user vs project) for what you're editing.", "tags": ["config", "settings"], "example": { "lang": "text", "code": "/config", "note": "Alias: /settings" } },
+        { "id": "cost",    "title": "/cost",    "level": "mid", "summary": "Show token usage and spend for this session.", "details": "Per-model breakdown of input/output tokens and cache stats.", "tags": ["cost", "tokens"], "example": { "lang": "text", "code": "/cost", "note": "Pro/Max sessions also show plan-relative usage." } },
+        { "id": "add-dir", "title": "/add-dir", "level": "mid", "summary": "Grant Claude file access to an additional directory.", "details": "By default Claude can only see the cwd. Use /add-dir to extend scope (e.g., a sibling repo).", "tags": ["permissions"], "example": { "lang": "text", "code": "/add-dir ~/code/shared-libs", "note": "" } },
+        { "id": "rewind",  "title": "/rewind",  "level": "mid", "summary": "Roll the conversation (and optionally code) back to a checkpoint.", "details": "Pick a previous user turn; the session reverts. Optionally also reverts file edits made since.", "tags": ["rewind", "undo"], "example": { "lang": "text", "code": "/rewind", "note": "Esc Esc is a shortcut to edit the last prompt." } },
+        { "id": "diff",    "title": "/diff",    "level": "mid", "summary": "Interactive viewer for uncommitted changes and per-turn diffs.", "details": "Side-by-side or unified view of edits Claude has made.", "tags": ["diff"], "example": { "lang": "text", "code": "/diff", "note": "" } },
+        { "id": "copy",    "title": "/copy",    "level": "mid", "summary": "Copy the last response (or a code block) to clipboard.", "details": "Optionally pick a numbered code block from the response.", "tags": ["copy"], "example": { "lang": "text", "code": "/copy", "note": "" } },
+        { "id": "export",  "title": "/export",  "level": "mid", "summary": "Save the conversation to a file or clipboard.", "details": "Markdown by default. Useful for sharing repros or PR descriptions.", "tags": ["export"], "example": { "lang": "text", "code": "/export", "note": "" } },
+
+        { "id": "context", "title": "/context", "level": "pro", "summary": "Visualize what's loaded in the context window.", "details": "Breakdown of system prompt, CLAUDE.md, tool defs, conversation, and free space.", "tags": ["context"], "example": { "lang": "text", "code": "/context", "note": "Use before /compact to see what to drop." } },
+        { "id": "usage",   "title": "/usage",   "level": "pro", "summary": "Show plan limits and current rate-limit status.",       "details": "On Pro/Max plans, shows window utilization and reset time.", "tags": ["usage", "limits"], "example": { "lang": "text", "code": "/usage", "note": "" } },
+        { "id": "hooks",   "title": "/hooks",   "level": "pro", "summary": "View hook configuration for tool events.",                "details": "Shows which hooks fire on which events, with their commands and matchers.", "tags": ["hooks"], "example": { "lang": "text", "code": "/hooks", "note": "" } },
+        { "id": "permissions", "title": "/permissions", "level": "pro", "summary": "View or change which tools require approval.",  "details": "Inspect allow/deny rules and the matchers that trigger them.", "tags": ["permissions"], "example": { "lang": "text", "code": "/permissions", "note": "" } },
+        { "id": "logout",  "title": "/logout",  "level": "pro", "summary": "Sign out of the current account.",                          "details": "Useful to switch between Pro and API credentials.", "tags": ["auth"], "example": { "lang": "text", "code": "/logout", "note": "" } },
+        { "id": "bug",     "title": "/bug",     "level": "pro", "summary": "Report an issue to Anthropic with session context.",       "details": "Bundles redacted state — model, OS, last turns — for a clean repro.", "tags": ["bug"], "example": { "lang": "text", "code": "/bug", "note": "Alias: /feedback" } },
+        { "id": "loop",    "title": "/loop",    "level": "pro", "summary": "Run a prompt or slash command on an interval.",            "details": "/loop 5m /babysit-prs runs every 5 minutes. Drop the interval to let the model self-pace. Stop with /loop-stop.", "tags": ["loop", "automation"], "examples": [
+          { "lang": "text", "code": "/loop 5m check the deploy and ping me on failure", "note": "With an interval (5m): re-runs the prompt every 5 minutes." },
+          { "lang": "text", "code": "/loop /triage-incoming-issues",                    "note": "No interval: model self-paces. Stop with /loop-stop." }
+        ] },
+        { "id": "schedule","title": "/schedule","level": "pro", "summary": "Cron-scheduled remote agents that run while you sleep.",  "details": "Cloud-side routines on a cron — one-time follow-ups or recurring work.", "tags": ["schedule", "cron"], "examples": [
+          { "lang": "text", "code": "/schedule weekly Mondays 9am — open a PR removing closed flags", "note": "Recurring routine." },
+          { "lang": "text", "code": "/schedule once in 14 days — clean up the BETA_ROLLOUT gate",     "note": "One-time follow-up. Manage all routines with `/schedule list`." }
+        ] }
+      ]
+    },
+
+    {
+      "id": "memory",
+      "title": "Memory & CLAUDE.md",
+      "icon": "brain",
+      "description": "How Claude carries instructions across sessions. CLAUDE.md files at the user, project, and sub-folder level compose into a single set of standing rules.",
+      "items": [
+        {
+          "id": "project-claude-md", "title": "Project CLAUDE.md", "level": "beginner",
+          "summary": "Per-repo instructions — commands, conventions, architecture.",
+          "details": "Lives at the repo root. Loaded into every session in that folder. Keep it tight: build/test/lint commands, big-picture architecture, non-obvious conventions.",
+          "tags": ["memory", "claude-md", "project"],
+          "example": { "lang": "markdown", "code": "# CLAUDE.md\n\n## Commands\n- Build: `pnpm build`\n- Test: `pnpm test --run`\n\n## Architecture\nNext.js front end + Go gRPC backend.", "note": "Run /init to scaffold." }
+        },
+        {
+          "id": "user-claude-md", "title": "User CLAUDE.md (global)", "level": "mid",
+          "summary": "Personal instructions that apply to every project.",
+          "details": "Lives at ~/.claude/CLAUDE.md. Use for personal preferences, identity, recurring instructions you don't want to repeat per repo.",
+          "tags": ["memory", "global"],
+          "example": { "lang": "markdown", "code": "# Global\n- Always mark generated files with: © Your Name\n- Prefer explicit TS types over inference\n- Don't add backwards-compat shims unless I ask", "note": "Loaded in addition to project CLAUDE.md." }
+        },
+        {
+          "id": "memory-shortcut", "title": "Save instruction with #", "level": "mid",
+          "summary": "Start a message with # to save it to CLAUDE.md.",
+          "details": "Quick way to teach Claude a convention permanently. Claude asks which CLAUDE.md (project vs user) and appends.",
+          "tags": ["memory", "shortcut"],
+          "example": { "lang": "text", "code": "# always run pnpm test --run, never watch mode", "note": "" }
+        },
+        {
+          "id": "memory-imports", "title": "Imports inside CLAUDE.md", "level": "pro",
+          "summary": "Compose CLAUDE.md from smaller files with @path imports.",
+          "details": "@path/to/file.md inside a CLAUDE.md inlines that file. Useful for shared standards across repos or sub-package overrides.",
+          "tags": ["memory", "imports"],
+          "example": { "lang": "markdown", "code": "# Project root CLAUDE.md\n@./docs/coding-standards.md\n@~/.claude/personal-prefs.md\n\n## Project-specific\n...", "note": "Imports are resolved at session start." }
+        },
+        {
+          "id": "memory-hierarchy", "title": "Memory hierarchy", "level": "pro",
+          "summary": "How user, project, and sub-folder CLAUDE.md files compose.",
+          "details": "Claude reads user (~/.claude), the repo root, and any ancestor folder above the cwd. Closer = higher precedence on conflicts.",
+          "tags": ["memory", "monorepo"],
+          "example": { "lang": "text", "code": "~/.claude/CLAUDE.md          ← global\nrepo/CLAUDE.md               ← project\nrepo/services/api/CLAUDE.md  ← only when cwd is inside services/api", "note": "Most-specific wins." }
+        }
+      ]
+    },
+
+    {
+      "id": "shortcuts",
+      "title": "Quick references & shortcuts",
+      "icon": "keyboard",
+      "description": "Inline syntax (@, #, !) and keybindings that make daily use fast — file references, memory shortcuts, shell escapes, and mode toggles.",
+      "items": [
+        {
+          "id": "at-file", "title": "@ file reference", "level": "mid",
+          "summary": "@path/to/file includes the file's contents in your prompt.",
+          "details": "Tab-completes paths. Tokenizes better than pasting and shows up in the audit log as a real reference.",
+          "tags": ["@", "reference"],
+          "example": { "lang": "text", "code": "explain the regex in @src/utils/parse.ts", "note": "" }
+        },
+        {
+          "id": "at-dir", "title": "@ directory reference", "level": "mid",
+          "summary": "@path/to/dir/ pulls in the whole directory.",
+          "details": "Skips files in .gitignore. Use sparingly — directories can blow your context.",
+          "tags": ["@", "reference"],
+          "example": { "lang": "text", "code": "summarize the API surface in @src/api/", "note": "" }
+        },
+        {
+          "id": "at-url", "title": "@ URL reference", "level": "mid",
+          "summary": "@https://example.com fetches a URL (read-only).",
+          "details": "Pulls the page once and includes it as context. Honors robots.txt.",
+          "tags": ["@", "url", "fetch"],
+          "example": { "lang": "text", "code": "compare our auth flow to @https://datatracker.ietf.org/doc/html/rfc6749", "note": "" }
+        },
+        {
+          "id": "hash-memory", "title": "# save to CLAUDE.md", "level": "mid",
+          "summary": "A leading # in your message saves it as a memory.",
+          "details": "Claude asks which CLAUDE.md to save into. Faster than /memory for one-off rules.",
+          "tags": ["#", "memory"],
+          "example": { "lang": "text", "code": "# never commit directly to main", "note": "" }
+        },
+        {
+          "id": "bang-shell", "title": "! shell escape", "level": "mid",
+          "summary": "A leading ! runs the rest as a shell command.",
+          "details": "Output is shown to you and fed back into Claude's context. Faster than asking Claude to run something.",
+          "tags": ["!", "shell"],
+          "examples": [
+            { "lang": "text", "code": "!git status",                          "note": "Quick: show working tree." },
+            { "lang": "text", "code": "!pnpm test --run path/to/file",        "note": "Targeted: run one test file. Output flows into Claude's context." }
+          ]
+        },
+        {
+          "id": "paste-image", "title": "Paste an image", "level": "mid",
+          "summary": "Cmd/Ctrl+V a screenshot directly into the prompt.",
+          "details": "Vision-capable models (Sonnet, Opus) read screenshots, design mockups, error dialogs, etc.",
+          "tags": ["image", "vision"],
+          "example": { "lang": "text", "code": "[Paste screenshot]\nWhat's wrong with this layout?", "note": "" }
+        },
+        {
+          "id": "keys-modes", "title": "Shift+Tab — cycle modes", "level": "beginner",
+          "summary": "Toggle Default → Accept Edits → Plan.",
+          "details": "Visible mode indicator updates in the prompt. Shift+Tab again to cycle.",
+          "tags": ["keys", "mode"],
+          "example": { "lang": "text", "code": "Shift+Tab", "note": "" }
+        },
+        {
+          "id": "keys-rewind", "title": "Esc Esc — rewind & edit", "level": "mid",
+          "summary": "Double-Esc to jump back and edit your previous prompt.",
+          "details": "Faster than /rewind for the common case of fixing a typo or refining intent.",
+          "tags": ["keys", "rewind"],
+          "example": { "lang": "text", "code": "Esc Esc → edit prompt → Enter", "note": "Single Esc interrupts a running response." }
+        },
+        {
+          "id": "keys-verbose", "title": "Ctrl+R — verbose transcript", "level": "mid",
+          "summary": "Expand the full transcript including tool calls and outputs.",
+          "details": "Helpful for debugging what Claude actually did vs. what it summarized.",
+          "tags": ["keys", "verbose"],
+          "example": { "lang": "text", "code": "Ctrl+R", "note": "" }
+        },
+        {
+          "id": "keys-history", "title": "↑ / ↓ — prompt history", "level": "beginner",
+          "summary": "Scroll through previous prompts; Tab completes paths.",
+          "details": "History is per-folder.",
+          "tags": ["keys", "history"],
+          "example": { "lang": "text", "code": "↑ ↓ to scroll, Tab to complete @paths", "note": "" }
+        }
+      ]
+    },
+
+    {
+      "id": "hooks",
+      "title": "Hooks",
+      "icon": "plug",
+      "description": "Shell commands the harness runs at lifecycle events. Use them for auto-formatting, logging, blocking unsafe calls, or notifications — anything you don't want to trust the model to remember.",
+      "items": [
+        {
+          "id": "hook-matrix",
+          "title": "Hook events — quick reference",
+          "level": "mid",
+          "summary": "All hook events at a glance: when they fire, what's in the payload, how to override behavior.",
+          "details": "Use this as a lookup when wiring a new hook and you've forgotten which event matches the trigger you want, what data your script will see, or how to influence the outcome. Drill into the individual event items below for full examples.",
+          "tags": ["hooks", "reference", "matrix"],
+          "table": {
+            "headers": ["Event", "Fires when", "Matcher", "Payload (key fields)", "Override outcome"],
+            "rows": [
+              ["`PreToolUse`",      "Before any tool call",         "✓ tool name regex", "`tool_name`, `tool_input`",                     "Exit ≠ 0 OR `{decision:\"block\"}`"],
+              ["`PostToolUse`",     "After a tool returns",         "✓ tool name regex", "`tool_name`, `tool_input`, `tool_response`",    "—  (logs only; tool already ran)"],
+              ["`UserPromptSubmit`", "User submits a prompt",       "—",                 "`prompt`",                                       "Stdout JSON can rewrite the prompt"],
+              ["`Stop`",            "Main agent's turn ends",       "—",                 "Last response, transcript path",                "Exit ≠ 0 to continue the turn"],
+              ["`SubagentStop`",    "A sub-agent's turn ends",      "—",                 "Sub-agent name, response",                       "Exit ≠ 0 to continue the sub-turn"],
+              ["`SessionStart`",    "Session opens",                "—",                 "`cwd`, env",                                     "—"],
+              ["`SessionEnd`",      "Session closes",               "—",                 "Reason (quit, idle, error)",                     "—"],
+              ["`PreCompact`",      "Before `/compact` runs",       "—",                 "Full conversation",                              "Stdout guides the summarizer"],
+              ["`Notification`",    "Claude is waiting on you",     "—",                 "Message",                                        "—"]
+            ],
+            "footnote": "All hooks receive event JSON on STDIN — parse with jq or `read`. Configure under `hooks` in settings.json. The matcher (where supported) is a regex over the tool name, e.g. `\"Bash|Write\"`."
+          },
+          "example": {
+            "lang": "json",
+            "code": "{\n  \"hooks\": {\n    \"PreToolUse\":      [{ \"matcher\": \"Bash\", \"hooks\": [{ \"type\": \"command\", \"command\": \"~/bin/cc-deny.sh\" }] }],\n    \"PostToolUse\":     [{ \"matcher\": \"Edit|Write\", \"hooks\": [{ \"type\": \"command\", \"command\": \"prettier --write \\\"$CLAUDE_FILE_PATH\\\" 2>/dev/null || true\" }] }],\n    \"UserPromptSubmit\": [{ \"hooks\": [{ \"type\": \"command\", \"command\": \"~/bin/inject-context.sh\" }] }],\n    \"Stop\":             [{ \"hooks\": [{ \"type\": \"command\", \"command\": \"osascript -e 'display notification \\\"Claude is done\\\"'\" }] }]\n  }\n}",
+            "note": "Drop into ~/.claude/settings.json (user) or .claude/settings.json (project)."
+          }
+        },
+        {
+          "id": "hooks-basics", "title": "What hooks are", "level": "mid",
+          "summary": "Shell commands the harness runs at lifecycle events, with event JSON on stdin.",
+          "details": "Configured under hooks in settings.json. Each hook is a command. Non-zero exit on PreToolUse blocks the call. JSON written to stdout can override outcomes for advanced use.",
+          "pitfalls": "Hooks receive event JSON on STDIN, not as command arguments — the #1 reason a hook 'silently does nothing' is reading $1 instead of stdin. Parse with jq or `read -r line` and operate on the parsed payload.",
+          "tags": ["hooks"],
+          "example": { "lang": "json", "code": "{\n  \"hooks\": {\n    \"PreToolUse\": [{\n      \"matcher\": \"Bash\",\n      \"hooks\": [{ \"type\": \"command\", \"command\": \"~/bin/log-bash.sh\" }]\n    }]\n  }\n}", "note": "" }
+        },
+        {
+          "id": "hook-pretooluse", "title": "PreToolUse", "level": "mid",
+          "summary": "Inspect or block a tool call before it runs.",
+          "details": "Exit non-zero to block. Match on tool name with regex (e.g., \"Bash|Write\").",
+          "pitfalls": "Block via exit code OR JSON output (`{\"decision\":\"block\",\"reason\":\"…\"}`) — pick one, mixing the two is undefined. Hooks fire on every matching tool call regardless of prior approvals; an over-eager matcher will pile up prompts.",
+          "tags": ["hooks", "tools"],
+          "example": { "lang": "json", "code": "{\n  \"hooks\": {\n    \"PreToolUse\": [{\n      \"matcher\": \"Bash\",\n      \"hooks\": [{ \"type\": \"command\", \"command\": \"~/bin/deny-rm-rf.sh\" }]\n    }]\n  }\n}", "note": "stdin = JSON event with tool name + args." }
+        },
+        {
+          "id": "hook-posttooluse", "title": "PostToolUse", "level": "mid",
+          "summary": "React after a tool ran — log, format, notify.",
+          "details": "Common pattern: auto-format edited files. Failures here don't roll back the tool, just log.",
+          "tags": ["hooks", "format"],
+          "example": { "lang": "json", "code": "{\n  \"hooks\": {\n    \"PostToolUse\": [{\n      \"matcher\": \"Edit|Write\",\n      \"hooks\": [{ \"type\": \"command\", \"command\": \"prettier --write \\\"$CLAUDE_FILE_PATH\\\" 2>/dev/null || true\" }]\n    }]\n  }\n}", "note": "" }
+        },
+        {
+          "id": "hook-userpromptsubmit", "title": "UserPromptSubmit", "level": "pro",
+          "summary": "Intercept the user's prompt before Claude sees it.",
+          "details": "Inject context, redact secrets, or block on policy violations. JSON output can rewrite the prompt.",
+          "tags": ["hooks"],
+          "example": { "lang": "json", "code": "{\n  \"hooks\": {\n    \"UserPromptSubmit\": [{\n      \"hooks\": [{ \"type\": \"command\", \"command\": \"~/bin/inject-jira-context.sh\" }]\n    }]\n  }\n}", "note": "Hook stdout (JSON) can replace prompt text." }
+        },
+        {
+          "id": "hook-stop", "title": "Stop / SubagentStop", "level": "pro",
+          "summary": "Fires when a turn finishes — desktop notifications, run tests, etc.",
+          "details": "Stop is the main agent's turn-end. SubagentStop fires when a sub-agent completes.",
+          "tags": ["hooks"],
+          "example": { "lang": "json", "code": "{\n  \"hooks\": {\n    \"Stop\": [{\n      \"hooks\": [{ \"type\": \"command\",\n        \"command\": \"osascript -e 'display notification \\\"Claude is done\\\"'\" }]\n    }]\n  }\n}", "note": "" }
+        },
+        {
+          "id": "hook-session", "title": "SessionStart / SessionEnd", "level": "pro",
+          "summary": "Run setup/cleanup at the edges of a session.",
+          "details": "Warm caches, pre-fetch tickets, log session boundaries, gather telemetry.",
+          "tags": ["hooks"],
+          "example": { "lang": "json", "code": "{\n  \"hooks\": {\n    \"SessionStart\": [{ \"hooks\": [{ \"type\": \"command\", \"command\": \"~/bin/preload-context.sh\" }] }],\n    \"SessionEnd\":   [{ \"hooks\": [{ \"type\": \"command\", \"command\": \"~/bin/archive-session.sh\" }] }]\n  }\n}", "note": "" }
+        },
+        {
+          "id": "hook-precompact", "title": "PreCompact", "level": "pro",
+          "summary": "Customize what gets summarized vs. dropped at /compact.",
+          "details": "Hook receives the conversation; can return guidance for the summarizer.",
+          "tags": ["hooks", "compact"],
+          "example": { "lang": "json", "code": "{\n  \"hooks\": {\n    \"PreCompact\": [{ \"hooks\": [{ \"type\": \"command\", \"command\": \"~/bin/keep-recent-errors.sh\" }] }]\n  }\n}", "note": "" }
+        },
+        {
+          "id": "hook-notification", "title": "Notification", "level": "pro",
+          "summary": "Fires when Claude is waiting on you (idle prompt).",
+          "details": "Great for desktop pings when Claude needs input — no more checking the terminal.",
+          "tags": ["hooks", "notify"],
+          "example": { "lang": "json", "code": "{\n  \"hooks\": {\n    \"Notification\": [{ \"hooks\": [{ \"type\": \"command\", \"command\": \"terminal-notifier -title 'Claude' -message 'awaiting you'\" }] }]\n  }\n}", "note": "" }
+        },
+        {
+          "id": "hook-json-output", "title": "Hook JSON output", "level": "pro",
+          "summary": "Write JSON to stdout to control hook outcomes.",
+          "details": "Decision fields like { \"decision\": \"block\", \"reason\": \"...\" } let hooks return rich responses instead of just exit codes.",
+          "tags": ["hooks", "advanced"],
+          "example": { "lang": "json", "code": "{ \"decision\": \"block\", \"reason\": \"Bash(rm -rf) is denied by policy\" }", "note": "Documented in the hooks reference." }
+        }
+      ]
+    },
+
+    {
+      "id": "mcp",
+      "title": "MCP servers",
+      "icon": "server",
+      "description": "Model Context Protocol — an open standard for plugging external systems (GitHub, Linear, databases, your own APIs) into Claude as callable tools.",
+      "items": [
+        { "id": "mcp-what", "title": "What is MCP?", "level": "mid",
+          "summary": "Open protocol for exposing tools/resources to LLMs.",
+          "details": "Claude Code can connect to any MCP server — local or remote — and call its tools alongside built-ins.",
+          "tags": ["mcp"], "example": { "lang": "text", "code": "/mcp", "note": "Lists connected servers and their tools." } },
+        { "id": "mcp-add-stdio", "title": "Add a local (stdio) MCP server", "level": "mid",
+          "summary": "Spawn a server as a subprocess and talk to it over stdio.",
+          "details": "Works for any package that exposes an MCP CLI. Configure in settings.json under mcpServers.",
+          "pitfalls": "env values aren't auto-inherited from your shell — `${VAR}` is interpolated but bare names pass through literally. Restart Claude Code after editing settings.json; running servers don't pick up changes.",
+          "tags": ["mcp", "stdio"],
+          "example": { "lang": "json", "code": "{\n  \"mcpServers\": {\n    \"github\": {\n      \"command\": \"npx\",\n      \"args\": [\"-y\", \"@modelcontextprotocol/server-github\"],\n      \"env\": { \"GITHUB_PERSONAL_ACCESS_TOKEN\": \"${GH_PAT}\" }\n    }\n  }\n}", "note": "" } },
+        { "id": "mcp-add-http", "title": "Add a remote (HTTP/SSE) MCP server", "level": "pro",
+          "summary": "Connect to a hosted MCP server over HTTP.",
+          "details": "Streamable HTTP / SSE transport. OAuth flows handled by the harness.",
+          "tags": ["mcp", "http"],
+          "example": { "lang": "json", "code": "{\n  \"mcpServers\": {\n    \"linear\": { \"url\": \"https://mcp.linear.app/sse\" }\n  }\n}", "note": "/mcp triggers the auth dance." } },
+        { "id": "mcp-scopes", "title": "MCP scopes", "level": "pro",
+          "summary": "User vs project vs local — pick where the server lives.",
+          "details": "User: everywhere. Project: shared with team (committed). Local: machine-only (gitignored). Local for secrets.",
+          "tags": ["mcp", "scope"],
+          "example": { "lang": "text", "code": "~/.claude/settings.json              ← user\n<repo>/.claude/settings.json         ← project (committed)\n<repo>/.claude/settings.local.json   ← local (gitignored)", "note": "Settings deep-merge; local wins." } },
+        { "id": "mcp-permissions", "title": "Per-tool MCP permissions", "level": "pro",
+          "summary": "Allow/deny rules with mcp__ prefix.",
+          "details": "Match an MCP tool by mcp__<server>__<tool> in permission rules.",
+          "pitfalls": "MCP tool names use double underscores: `mcp__github__create_issue`. Single-underscore matchers fail silently and never match. Verify by running /mcp — the listed tool names are exactly what permission rules need.",
+          "tags": ["mcp", "permissions"],
+          "example": { "lang": "json", "code": "{\n  \"permissions\": {\n    \"allow\": [\"mcp__github__create_issue\", \"mcp__linear__*\"],\n    \"deny\":  [\"mcp__github__delete_*\"]\n  }\n}", "note": "" } },
+        { "id": "mcp-debug", "title": "Debug an MCP server", "level": "pro",
+          "summary": "/mcp shows logs and connection state.",
+          "details": "Restart, re-auth, view stderr from stdio servers, inspect available tools.",
+          "tags": ["mcp", "debug"],
+          "example": { "lang": "text", "code": "/mcp", "note": "Pick a server to drill in." } }
+      ]
+    },
+
+    {
+      "id": "agents",
+      "title": "Sub-agents & skills",
+      "icon": "users",
+      "description": "Task-specific helpers Claude can spawn. Sub-agents run in their own context and report back; skills are reusable invocable workflows.",
+      "items": [
+        { "id": "explore-agent", "title": "Explore agent", "level": "mid",
+          "summary": "Fast, read-only search across the repo.",
+          "details": "Spawns a sub-agent for keyword/file lookups. Returns a tight summary without polluting your main context.",
+          "tags": ["agents"], "example": { "lang": "text", "code": "Use Explore to find where the rate-limiter lives.", "note": "" } },
+        { "id": "plan-agent", "title": "Plan agent", "level": "mid",
+          "summary": "Design an implementation plan without writing code.",
+          "details": "Ideal for non-trivial features — produces a step-by-step plan and identifies critical files.",
+          "tags": ["agents"], "example": { "lang": "text", "code": "Have the Plan agent design how to add OAuth — don't implement.", "note": "" } },
+        { "id": "general-agent", "title": "general-purpose agent", "level": "mid",
+          "summary": "Multi-step research and execution — when one focused agent isn't enough.",
+          "details": "Has access to all tools. Use for open-ended investigations.",
+          "tags": ["agents"], "example": { "lang": "text", "code": "Use a general-purpose agent to research and migrate our test runner.", "note": "" } },
+        { "id": "custom-agent", "title": "Custom sub-agents", "level": "pro",
+          "summary": "Define your own agents in .claude/agents/<name>.md.",
+          "details": "Markdown file with frontmatter (name, description, tools, model). Claude routes to it when the description matches.",
+          "pitfalls": "Routing keys off the `description` field, not the file name. Vague descriptions mean Claude never spawns the agent. Phrase the description like a sentence the user might say (\"audits SQL migrations for safety on large tables\") so the model can match intent.",
+          "tags": ["agents", "custom"],
+          "example": { "lang": "markdown", "code": "---\nname: migration-checker\ndescription: Audits a SQL migration for safety on large tables.\ntools: Read, Bash, Grep\nmodel: opus\n---\n\nYou are a database safety reviewer...", "note": ".claude/agents/migration-checker.md" } },
+        { "id": "agent-worktree", "title": "Worktree-isolated agents", "level": "pro",
+          "summary": "Run a sub-agent on a temporary git worktree to keep changes isolated.",
+          "details": "Spawn the agent with isolation: \"worktree\" — it works in its own branch and merges or returns its diff cleanly.",
+          "pitfalls": "Failed runs leave their worktree behind. `git worktree list` to see them; `git worktree remove <path>` to clean up. Branches accumulate too — prune periodically or your repo's branch list gets messy.",
+          "tags": ["agents", "worktree"],
+          "example": { "lang": "text", "code": "Spawn a sub-agent (worktree-isolated) to refactor the logger and report back.", "note": "Agent tool's isolation flag." } },
+        { "id": "skills-builtin", "title": "Built-in skills", "level": "mid",
+          "summary": "Invocable workflows like /init, /review, /security-review, /simplify.",
+          "details": "Skills are bundled instructions + helpers. Some auto-activate when relevant; all are listed in /skills.",
+          "tags": ["skills"], "example": { "lang": "text", "code": "/skills\n/security-review\n/simplify", "note": "" } },
+        { "id": "skills-custom", "title": "Custom skills", "level": "pro",
+          "summary": "Drop a SKILL.md in .claude/skills/<name>/ to add your own.",
+          "details": "Skills can include helper scripts/files. They appear in /skills and can auto-activate when their description matches the user's intent.",
+          "tags": ["skills", "custom"],
+          "example": { "lang": "markdown", "code": "# .claude/skills/release-notes/SKILL.md\n---\nname: release-notes\ndescription: Generate release notes from the merged PRs since the last tag.\n---\n\nWhen invoked, gather merged PRs since the latest tag and...", "note": "" } },
+        { "id": "custom-commands", "title": "Custom slash commands", "level": "mid",
+          "summary": "Markdown files in .claude/commands/ become /-commands.",
+          "details": "Frontmatter sets allowed-tools, model, args. The body is the prompt template. User scope (~/.claude/commands/) is shared across projects.",
+          "pitfalls": "Frontmatter typos (`allowed_tools` vs `allowed-tools`, `Model` vs `model`) are ignored silently — the command runs without those tools and the model can't actually do anything. Validate with /skills or by running the command and watching what tools it tries to use.",
+          "tags": ["commands", "custom"],
+          "example": { "lang": "markdown", "code": "# .claude/commands/deploy.md\n---\nallowed-tools: Bash(git:*), Bash(./deploy.sh:*)\nmodel: sonnet\n---\nDeploy {{1}} to staging and report the URL.", "note": "Then: /deploy v1.4" } }
+      ]
+    },
+
+    {
+      "id": "settings",
+      "title": "Permissions & settings",
+      "icon": "sliders",
+      "description": "settings.json controls hooks, permissions, env vars, and MCP servers. Three scopes — user, project (committed), local (gitignored) — deep-merge in that order.",
+      "items": [
+        { "id": "settings-json", "title": "settings.json basics", "level": "mid",
+          "summary": "One JSON file controls hooks, permissions, env, and MCP.",
+          "details": "Three scopes: user (~/.claude/settings.json), project (<repo>/.claude/settings.json — committed), local (<repo>/.claude/settings.local.json — gitignored). Deep-merge: local > project > user.",
+          "tags": ["settings"],
+          "example": { "lang": "json", "code": "{\n  \"permissions\": { \"allow\": [\"Bash(npm test:*)\"] },\n  \"env\": { \"DEBUG\": \"true\" },\n  \"hooks\":      { },\n  \"mcpServers\": { }\n}", "note": "/config opens the right scope for you." } },
+        { "id": "permission-allow", "title": "Permission allow rules", "level": "mid",
+          "summary": "Auto-approve safe operations so you stop clicking yes.",
+          "details": "Use prefix patterns. Bash matchers can use globs and parentheses to scope to argument prefixes.",
+          "pitfalls": "Broad globs like Bash(git:*) silently include destructive variants — git reset --hard, git push --force. Whitelist specific sub-commands (Bash(git status), Bash(git diff:*)) instead, and pair with deny/ask rules for the dangerous variants.",
+          "tags": ["permissions"],
+          "example": { "lang": "json", "code": "{\n  \"permissions\": {\n    \"allow\": [\n      \"Bash(git status)\",\n      \"Bash(git diff:*)\",\n      \"Bash(npm test:*)\",\n      \"Read(./**)\"\n    ]\n  }\n}", "note": "Keep destructive commands out of allow." } },
+        { "id": "permission-deny", "title": "Permission deny rules", "level": "pro",
+          "summary": "Hard-block specific operations regardless of allow rules.",
+          "details": "Deny wins over allow. Use for rm -rf, force pushes, secret reads, prod deploys.",
+          "pitfalls": "Deny rules match how the model invokes the command, not how a human would. Bash(rm:*) blocks `rm` but not `sudo rm`, not `find … -delete`, not `bash -c 'rm …'`. Layer matchers and pair with a PreToolUse hook for context-aware checks.",
+          "tags": ["permissions", "deny"],
+          "example": { "lang": "json", "code": "{\n  \"permissions\": {\n    \"deny\": [\n      \"Bash(rm -rf:*)\",\n      \"Bash(git push --force:*)\",\n      \"Read(.env)\",\n      \"Read(.env.*)\"\n    ]\n  }\n}", "note": "" } },
+        { "id": "permission-ask", "title": "ask vs allow", "level": "pro",
+          "summary": "ask forces a prompt even when a parent rule would allow.",
+          "details": "Use to gate sensitive subsets of an otherwise-trusted family of commands.",
+          "tags": ["permissions"],
+          "example": { "lang": "json", "code": "{\n  \"permissions\": {\n    \"allow\": [\"Bash(git:*)\"],\n    \"ask\":   [\"Bash(git push:*)\", \"Bash(git reset --hard:*)\"]\n  }\n}", "note": "" } },
+        { "id": "env-vars", "title": "env: inject environment variables", "level": "pro",
+          "summary": "Pass env into every Claude session in scope.",
+          "details": "Useful for ANTHROPIC_API_KEY, NODE_OPTIONS, proxies, debug flags. Keep secrets in settings.local.json, not the committed project file.",
+          "tags": ["env"],
+          "example": { "lang": "json", "code": "{ \"env\": { \"NODE_OPTIONS\": \"--max-old-space-size=4096\" } }", "note": "" } },
+        { "id": "settings-local", "title": "settings.local.json", "level": "mid",
+          "summary": "Per-machine overrides — gitignored, safe for secrets.",
+          "details": "Same shape as settings.json. Merges last so it wins ties. Add to .gitignore (Claude Code does this automatically).",
+          "tags": ["settings", "local"],
+          "example": { "lang": "text", "code": "<repo>/.claude/settings.local.json   ← gitignored\n  ↳ overrides project + user settings", "note": "" } },
+        { "id": "status-line", "title": "Custom status line", "level": "pro",
+          "summary": "Replace the default prompt status line with your own.",
+          "details": "statusLine.command runs each turn; its stdout becomes the prompt's status line. Show git branch, model, cost, anything.",
+          "tags": ["statusline", "ui"],
+          "example": { "lang": "json", "code": "{\n  \"statusLine\": {\n    \"command\": \"~/bin/cc-status.sh\"\n  }\n}", "note": "" } },
+        { "id": "output-styles", "title": "Output styles", "level": "pro",
+          "summary": "Bias responses toward verbose, concise, or custom voices.",
+          "details": "outputStyles in settings selects from built-in styles or your own .claude/output-styles/<name>.md.",
+          "tags": ["output-styles"],
+          "example": { "lang": "json", "code": "{ \"outputStyle\": \"concise\" }", "note": "" } },
+        { "id": "telemetry", "title": "Telemetry & data location", "level": "pro",
+          "summary": "Where transcripts, sessions, and logs live locally.",
+          "details": "Sessions stored under ~/.claude/projects/<project>/. Set DISABLE_TELEMETRY=1 to opt out of optional analytics.",
+          "tags": ["telemetry", "privacy"],
+          "example": { "lang": "bash", "code": "ls ~/.claude/projects/\nDISABLE_TELEMETRY=1 claude", "note": "" } }
+      ]
+    },
+
+    {
+      "id": "ide",
+      "title": "IDE integration",
+      "icon": "code",
+      "description": "Native experiences inside VS Code and JetBrains, plus how to use the CLI from Cursor's terminal.",
+      "items": [
+        {
+          "id": "feature-env-matrix",
+          "title": "Features × environments — what works where",
+          "level": "mid",
+          "summary": "At-a-glance view of which Claude Code features run in which environment.",
+          "details": "If you're picking an environment to commit to (or considering switching), this matrix shows where each feature is available natively, where it's available through a workaround, and where it's not.",
+          "tags": ["reference", "matrix", "environments"],
+          "table": {
+            "headers": ["Feature", "Desktop", "CLI", "VS Code", "Cursor"],
+            "rows": [
+              ["Interactive chat",                  "✓",            "✓",            "✓",            "via CLI in terminal"],
+              ["Inline editor diffs",               "—",            "—",            "✓",            "—  (use CLI)"],
+              ["Send selection as context",         "—",            "—",            "✓",            "via Cursor's own AI"],
+              ["Slash commands",                    "✓",            "✓",            "✓",            "✓"],
+              ["CLAUDE.md (project + user)",        "✓",            "✓",            "✓",            "✓"],
+              ["Hooks",                             "✓",            "✓",            "✓",            "✓"],
+              ["MCP servers",                       "✓",            "✓",            "✓",            "✓"],
+              ["Sub-agents & skills",               "✓",            "✓",            "✓",            "✓"],
+              ["settings.json (all scopes)",        "✓",            "✓",            "✓",            "✓"],
+              ["Print mode (`-p`) / headless",      "—",            "✓",            "—  (terminal)", "via CLI in terminal"],
+              ["`--output-format json`",            "—",            "✓",            "—  (terminal)", "via CLI in terminal"],
+              ["Resume / `--continue`",             "✓ (launcher)",  "✓",            "✓ (history)",   "via CLI"],
+              ["Plan / Accept-Edits modes",         "✓",            "✓",            "✓",            "✓"],
+              ["`@file` / `@dir` / `@url` refs",    "✓",            "✓",            "✓",            "✓"],
+              ["`#` save-to-memory",                "✓",            "✓",            "✓",            "✓"],
+              ["`!` shell escape",                  "✓",            "✓",            "✓",            "✓"],
+              ["Paste image",                       "✓",            "✓",            "✓",            "✓"],
+              ["`/loop` & `/schedule`",             "✓",            "✓",            "✓",            "✓"],
+              ["`Shift+Tab` mode cycle",            "✓",            "✓",            "✓",            "✓"],
+              ["`Esc Esc` rewind",                  "✓",            "✓",            "✓",            "✓"]
+            ],
+            "footnote": "Cursor doesn't ship Claude Code; the column tracks features available when you run the `claude` CLI inside Cursor's terminal. Cursor's own AI (Composer / Cmd-K) is a separate product."
+          },
+          "example": {
+            "lang": "text",
+            "code": "Rule of thumb:\n  CLI         — most powerful (every feature, scriptable)\n  Desktop     — best general-purpose UI\n  VS Code     — best in-editor experience (inline diffs)\n  Cursor      — Claude Code via terminal + Cursor's own AI in editor",
+            "note": "Pick by where you spend your day — features other than inline-diff are essentially identical across environments."
+          }
+        },
+        { "id": "vscode-ext", "title": "VS Code extension", "level": "beginner", "envs": ["vscode"],
+          "summary": "Native chat panel + inline diffs.",
+          "details": "Cmd/Ctrl+Esc opens the panel. Inline diffs apply directly to the editor; accept/reject hunk-by-hunk.",
+          "tags": ["vscode"],
+          "example": { "lang": "text", "code": "Cmd/Ctrl+Esc       — toggle panel\nCmd/Ctrl+L         — send selection as context", "note": "" } },
+        { "id": "vscode-keys", "title": "VS Code shortcuts & gotchas", "level": "mid", "envs": ["vscode"],
+          "summary": "Selections auto-share; settings live in the same .claude folder.",
+          "details": "Selection in the editor is included on send. The extension reads the same settings.json as the CLI — no separate config.",
+          "tags": ["vscode"],
+          "example": { "lang": "text", "code": "Highlight code → Cmd+Esc → ask. Selection is the context.", "note": "" } },
+        { "id": "jetbrains", "title": "JetBrains plugin", "level": "mid",
+          "summary": "IntelliJ / PyCharm / WebStorm / GoLand support.",
+          "details": "Same model + account as the CLI. Plugin docks into the IDE.",
+          "tags": ["jetbrains"],
+          "example": { "lang": "text", "code": "Settings → Plugins → search “Claude Code” → Install → Restart", "note": "" } },
+        { "id": "cursor-usage", "title": "Claude Code in Cursor", "level": "beginner", "envs": ["cursor"],
+          "summary": "Two paths: run the CLI in Cursor's terminal, or use Cursor's own AI.",
+          "details": "Cursor doesn't ship Claude Code. The CLI works in Cursor's terminal. Cursor's Composer/Cmd-K is a separate AI integration.",
+          "tags": ["cursor"],
+          "envExamples": { "cursor": { "lang": "bash", "code": "# Cursor terminal\ncd $(pwd) && claude", "note": "Editor selections aren't auto-shared with the CLI." } } },
+        { "id": "ide-mcp", "title": "MCP & hooks work everywhere", "level": "mid",
+          "summary": "MCP servers, hooks, and skills are environment-agnostic.",
+          "details": "The CLI and the IDE extensions read the same settings.json. Configure once, use anywhere.",
+          "tags": ["ide", "mcp"],
+          "example": { "lang": "text", "code": "Edit ~/.claude/settings.json → effective in CLI, VS Code, JetBrains.", "note": "" } }
+      ]
+    },
+
+    {
+      "id": "headless",
+      "title": "Headless & scripting",
+      "icon": "code-2",
+      "description": "Running Claude one-shot from the shell — git hooks, CI gates, pipelines. Use -p, --output-format, --max-turns.",
+      "items": [
+        { "id": "p-flag", "title": "claude -p basics", "level": "mid", "envs": ["cli", "cursor"],
+          "summary": "One-shot prompts from the shell.",
+          "details": "Inherits CLAUDE.md and settings. Stdout is the answer; no interactive prompts.",
+          "tags": ["headless"],
+          "example": { "lang": "bash", "code": "claude -p \"summarize: $(git diff --staged)\"", "note": "" } },
+        { "id": "p-flag-pipe", "title": "Pipe stdin into claude -p", "level": "mid", "envs": ["cli", "cursor"],
+          "summary": "Feed any command's output into Claude as the prompt's data.",
+          "details": "Anything on stdin gets prepended to the prompt. Combine with -p for one-line analysis: logs, diffs, jq output, ps listings, anything text-shaped.",
+          "tags": ["headless", "pipe", "stdin"],
+          "examples": [
+            { "lang": "bash", "code": "git log --oneline | claude -p \"summarize what changed this week\"", "note": "Summarize recent commits." },
+            { "lang": "bash", "code": "cat error.log | claude -p \"find the root cause\"",                   "note": "Triage logs without copy-paste." },
+            { "lang": "bash", "code": "kubectl get pods | claude -p \"any pod looks unhealthy?\"",          "note": "Anything text-shaped works." }
+          ] },
+        { "id": "json-output", "title": "--output-format json", "level": "pro", "envs": ["cli", "cursor"],
+          "summary": "Parseable structured output for pipelines.",
+          "details": "Returns turns, tool calls, and metadata as JSON. Pipe through jq.",
+          "tags": ["headless", "json"],
+          "example": { "lang": "bash", "code": "claude -p \"are there secrets in this diff?\" \\\n  --output-format json | jq -r '.result'", "note": "" } },
+        { "id": "stream-json", "title": "--output-format stream-json", "level": "pro", "envs": ["cli", "cursor"],
+          "summary": "Newline-delimited JSON events as Claude works.",
+          "details": "Stream tool calls and tokens to a watcher. Ideal for orchestrators and dashboards.",
+          "tags": ["headless", "stream"],
+          "example": { "lang": "bash", "code": "claude -p \"refactor utils.ts\" \\\n  --output-format stream-json \\\n  | tee events.ndjson", "note": "Each line is a discrete event." } },
+        { "id": "headless-resume", "title": "Resume in headless mode", "level": "pro", "envs": ["cli", "cursor"],
+          "summary": "Continue a previous conversation non-interactively.",
+          "details": "Use --resume <session-id> for a specific session, or -c to continue the latest in cwd.",
+          "tags": ["headless", "resume"],
+          "examples": [
+            { "lang": "bash", "code": "claude --resume abc123 -p \"now write tests\"", "note": "Resume a specific session by id." },
+            { "lang": "bash", "code": "claude -c -p \"summarize the diff\"",            "note": "Continue the latest session in this folder." }
+          ] },
+        { "id": "headless-permissions", "title": "Headless permissions", "level": "pro", "envs": ["cli", "cursor"],
+          "summary": "--permission-mode controls how strict prompts are in -p.",
+          "details": "auto-accepts edits or runs in plan mode without UI. For CI, pair with explicit allow/deny rules.",
+          "pitfalls": "Without explicit allow rules, headless runs hang on a prompt that no human will ever answer. Always set `--permission-mode acceptEdits` (or `plan`) AND pre-allow the tools you need in settings.json. Also set --max-turns so a stuck loop doesn't bill forever.",
+          "tags": ["headless", "permissions"],
+          "example": { "lang": "bash", "code": "claude -p \"...\" --permission-mode acceptEdits --max-turns 8", "note": "" } },
+        { "id": "git-hook", "title": "Pattern: prepare-commit-msg hook", "level": "pro", "envs": ["cli", "cursor"],
+          "summary": "Auto-generate commit messages from staged diffs.",
+          "details": "Drop a script in .git/hooks/prepare-commit-msg that calls claude -p.",
+          "tags": ["headless", "git"],
+          "example": { "lang": "bash", "code": "# .git/hooks/prepare-commit-msg\n#!/usr/bin/env bash\nclaude -p \"write a 1-line conventional commit for: $(git diff --staged)\" >> \"$1\"", "note": "Make executable." } }
+      ]
+    },
+
+    {
+      "id": "integrations",
+      "title": "Integrations & deployments",
+      "icon": "globe",
+      "description": "Running Claude Code beyond your laptop — GitHub Actions, the Anthropic and Agent SDKs, and Bedrock/Vertex backends.",
+      "items": [
+        { "id": "gh-actions", "title": "GitHub Actions: claude-code-action", "level": "pro",
+          "summary": "Run Claude Code from CI on PRs, issues, or schedules.",
+          "details": "anthropics/claude-code-action handles auth, lets you wire reviews, autofixes, or scheduled tasks.",
+          "tags": ["github", "ci"],
+          "example": { "lang": "yaml", "code": "- uses: anthropics/claude-code-action@v1\n  with:\n    anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}\n    prompt: |\n      Review the diff in this PR and post comments inline.", "note": "" } },
+        { "id": "agent-sdk", "title": "Claude Agent SDK", "level": "pro",
+          "summary": "Programmatically spawn Claude Code-style agents in your own apps.",
+          "details": "TypeScript and Python SDKs. Same tools, hooks, and MCP support — wired into your code.",
+          "tags": ["sdk", "agents"],
+          "example": { "lang": "ts", "code": "import { query } from '@anthropic-ai/claude-agent-sdk';\n\nfor await (const ev of query({ prompt: 'audit dependencies' })) {\n  console.log(ev);\n}", "note": "" } },
+        { "id": "anthropic-sdk", "title": "Anthropic SDK", "level": "pro",
+          "summary": "Direct API access — for fully custom agents and integrations.",
+          "details": "@anthropic-ai/sdk (TS) and anthropic (Python). Lower-level than the Agent SDK; you build the loop yourself.",
+          "tags": ["sdk", "api"],
+          "example": { "lang": "ts", "code": "import Anthropic from '@anthropic-ai/sdk';\nconst client = new Anthropic();\nconst msg = await client.messages.create({ model: 'claude-sonnet-4-6', max_tokens: 1024, messages: [{ role: 'user', content: 'hi' }] });", "note": "" } },
+        { "id": "bedrock", "title": "AWS Bedrock backend", "level": "pro",
+          "summary": "Route Claude Code calls through Bedrock for enterprise compliance.",
+          "details": "Set CLAUDE_CODE_USE_BEDROCK=1 plus AWS creds. Model IDs use Bedrock's namespacing.",
+          "pitfalls": "Model IDs don't match the Anthropic API namespace, and not every Claude version is available in every region. Look up the exact ID in the Bedrock console for your AWS_REGION before pinning a model in settings.",
+          "tags": ["bedrock", "enterprise"],
+          "example": { "lang": "bash", "code": "export CLAUDE_CODE_USE_BEDROCK=1\nexport AWS_REGION=us-west-2\nclaude", "note": "" } },
+        { "id": "vertex", "title": "Google Vertex backend", "level": "pro",
+          "summary": "Route through Vertex AI for GCP-native deployments.",
+          "details": "Set CLAUDE_CODE_USE_VERTEX=1 plus GCP project/region. Uses Vertex's model naming.",
+          "tags": ["vertex", "enterprise"],
+          "example": { "lang": "bash", "code": "export CLAUDE_CODE_USE_VERTEX=1\nexport CLOUD_ML_REGION=us-east5\nexport ANTHROPIC_VERTEX_PROJECT_ID=my-gcp-project\nclaude", "note": "" } },
+        { "id": "proxy-byo", "title": "Self-hosted proxy / BYO endpoint", "level": "pro",
+          "summary": "Point Claude Code at a custom Anthropic-compatible endpoint.",
+          "details": "ANTHROPIC_BASE_URL lets you front the API with a proxy for logging, redaction, or routing.",
+          "tags": ["proxy", "enterprise"],
+          "example": { "lang": "bash", "code": "export ANTHROPIC_BASE_URL=https://my-proxy.internal/anthropic\nexport ANTHROPIC_API_KEY=...\nclaude", "note": "" } }
+      ]
+    },
+
+    {
+      "id": "recipes",
+      "title": "Workflow recipes",
+      "icon": "book-open",
+      "description": "End-to-end patterns that combine multiple features — hooks, headless mode, MCP, scheduled agents — into something useful in one go.",
+      "items": [
+        {
+          "id": "recipe-pr-review",
+          "title": "CI: review every PR with claude -p",
+          "level": "pro",
+          "summary": "Inline review comments on every pull request, no humans required.",
+          "details": "Goal: every PR gets an automated review pass before a human touches it.\n\nIngredients: GitHub Actions, Anthropic's claude-code-action, headless prompt, your project CLAUDE.md.\n\nSteps:\n1. Add ANTHROPIC_API_KEY to repo secrets.\n2. Create .github/workflows/claude-review.yml (see code).\n3. The action checks out the PR, runs Claude Code in headless mode against the diff, and posts comments.\n4. Tune the prompt to your codebase: list your project conventions, deny patterns, must-have checks.\n\nWhy it works: claude-code-action loads your repo CLAUDE.md so the review enforces your team's actual conventions, not generic advice.",
+          "tags": ["recipe", "ci", "github", "review", "headless"],
+          "example": {
+            "lang": "yaml",
+            "code": "name: claude-review\non:\n  pull_request:\n    types: [opened, synchronize, reopened]\n\njobs:\n  review:\n    runs-on: ubuntu-latest\n    permissions:\n      contents: read\n      pull-requests: write\n    steps:\n      - uses: actions/checkout@v4\n        with: { fetch-depth: 0 }\n      - uses: anthropics/claude-code-action@v1\n        with:\n          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}\n          prompt: |\n            Review the diff in this PR.\n            Flag: secrets, missing tests, breaking API changes, perf hotspots.\n            Post inline comments on the offending lines; finish with a short summary.",
+            "note": "Add your CLAUDE.md to the repo first — the action loads it automatically."
+          }
+        },
+        {
+          "id": "recipe-autoformat",
+          "title": "Auto-format every edit",
+          "level": "mid",
+          "summary": "Hook formatters into Edit/Write so generated code is always clean.",
+          "details": "Goal: never see Claude's unformatted output again.\n\nIngredients: PostToolUse hook, your project's formatter (prettier / ruff / gofmt / etc).\n\nSteps:\n1. Add a PostToolUse hook in .claude/settings.json that matches Edit and Write.\n2. The hook receives $CLAUDE_FILE_PATH on stdin event JSON; parse it (or use the env var the harness exposes) and run the formatter.\n3. Use `2>/dev/null || true` so a missing formatter doesn't break the loop.\n\nWhy it works: deterministic — formatting happens whether Claude remembers or not. No prompt engineering needed.",
+          "tags": ["recipe", "hooks", "format", "tooling"],
+          "example": {
+            "lang": "json",
+            "code": "{\n  \"hooks\": {\n    \"PostToolUse\": [{\n      \"matcher\": \"Edit|Write\",\n      \"hooks\": [{\n        \"type\": \"command\",\n        \"command\": \"prettier --write \\\"$CLAUDE_FILE_PATH\\\" 2>/dev/null || true\"\n      }]\n    }]\n  }\n}",
+            "note": "Swap `prettier` for `ruff format`, `gofmt -w`, etc."
+          }
+        },
+        {
+          "id": "recipe-commit-message",
+          "title": "Generate commit messages from staged diffs",
+          "level": "mid",
+          "summary": "Git's prepare-commit-msg hook calls claude -p so commits write themselves.",
+          "details": "Goal: never type a commit message again. Get a conventional-commit one-liner derived from the actual diff.\n\nIngredients: a git hook, claude -p, optional: a CLAUDE.md rule for your preferred commit style.\n\nSteps:\n1. Drop the script below in .git/hooks/prepare-commit-msg and chmod +x it.\n2. Run `git commit` — Claude reads the staged diff and pre-fills the message.\n3. Edit before save if needed; Claude's draft is just a starting point.\n\nWhy it works: -p inherits CLAUDE.md, so any \"commit style\" rules you've set apply.",
+          "tags": ["recipe", "git", "headless"],
+          "example": {
+            "lang": "bash",
+            "code": "# .git/hooks/prepare-commit-msg\n#!/usr/bin/env bash\n# Skip on rebases / merges / amends with an existing message\n[ -n \"$2\" ] && exit 0\n\nDIFF=$(git diff --staged)\n[ -z \"$DIFF\" ] && exit 0\n\nclaude -p \"Write a one-line conventional commit for this diff:\\n$DIFF\" >> \"$1\"",
+            "note": "chmod +x .git/hooks/prepare-commit-msg"
+          }
+        },
+        {
+          "id": "recipe-deny-rmrf",
+          "title": "Block dangerous Bash commands",
+          "level": "pro",
+          "summary": "PreToolUse hook + deny rules: rm -rf, force pushes, prod deploys never run accidentally.",
+          "details": "Goal: even if Claude proposes a destructive command, the harness refuses to execute it.\n\nIngredients: settings.json deny rules + a PreToolUse hook for anything that needs context-aware checks (e.g., 'rm under $HOME but not in /tmp').\n\nSteps:\n1. Start with deny rules — fast, declarative, no scripting.\n2. Add a PreToolUse hook for the rest. Exit non-zero to block.\n3. Pair with `ask` rules for things that should always prompt regardless of past approvals.\n\nWhy it works: deny wins over allow, and hooks fire before the tool runs — there's no way past them.",
+          "tags": ["recipe", "permissions", "hooks", "safety"],
+          "example": {
+            "lang": "json",
+            "code": "{\n  \"permissions\": {\n    \"deny\": [\n      \"Bash(rm -rf:*)\",\n      \"Bash(git push --force:*)\",\n      \"Bash(git push -f:*)\",\n      \"Read(.env)\",\n      \"Read(.env.*)\"\n    ],\n    \"ask\": [\n      \"Bash(git reset --hard:*)\",\n      \"Bash(npm publish:*)\"\n    ]\n  },\n  \"hooks\": {\n    \"PreToolUse\": [{\n      \"matcher\": \"Bash\",\n      \"hooks\": [{ \"type\": \"command\", \"command\": \"~/bin/cc-deny-policy.sh\" }]\n    }]\n  }\n}",
+            "note": "Hook script reads JSON from stdin; exit 1 to block."
+          }
+        },
+        {
+          "id": "recipe-schedule-triage",
+          "title": "Weekly stale-PR triage",
+          "level": "pro",
+          "summary": "/schedule a remote agent that pings on stale PRs every Monday morning.",
+          "details": "Goal: PRs older than 7 days get summarized and re-pinged automatically; nothing rots in the queue.\n\nIngredients: /schedule + a custom command (.claude/commands/triage-stale-prs.md) that knows your conventions.\n\nSteps:\n1. Drop a custom command in .claude/commands/triage-stale-prs.md (see code) describing exactly what 'triage' means in your repo.\n2. From any session in that repo, run `/schedule weekly Mondays 9am — /triage-stale-prs`.\n3. The cloud-side agent runs on schedule, opens summary issues or pings authors per your instructions.\n\nWhy it works: /schedule picks up the same CLAUDE.md and custom commands as your local sessions. Same rules, same voice.",
+          "tags": ["recipe", "schedule", "automation", "github"],
+          "example": {
+            "lang": "markdown",
+            "code": "# .claude/commands/triage-stale-prs.md\n---\nallowed-tools: Bash(gh:*), Bash(git:*)\nmodel: sonnet\n---\n\nFind all open PRs in this repo with no activity in 7+ days.\nFor each: post a comment summarizing the diff and tagging @<author>.\nGroup by team and post a summary issue tagged 'triage'.\n\nThen schedule with:\n  /schedule weekly Mondays 9am — /triage-stale-prs",
+            "note": "Manage routines via `/schedule list`."
+          }
+        },
+        {
+          "id": "recipe-worktree-refactor",
+          "title": "Risky refactor in a worktree",
+          "level": "pro",
+          "summary": "Spawn a sub-agent on an isolated git worktree so a wild refactor can't break your main branch.",
+          "details": "Goal: try a brave refactor (upgrade a major dep, rename a core abstraction) without polluting your working tree.\n\nIngredients: the Agent tool with isolation: \"worktree\".\n\nSteps:\n1. From your main session, ask Claude to spawn a sub-agent with worktree isolation describing the refactor goal.\n2. The sub-agent works in a temporary worktree on its own branch — your main tree is untouched.\n3. When it returns, inspect the branch with git diff or open it in another editor window.\n4. Cherry-pick what works, drop what doesn't.\n\nWhy it works: a temp worktree is a real branch + checkout; the agent can run tests, lint, and commit there. You see the actual diff before any of it lands in your main branch.",
+          "tags": ["recipe", "worktree", "agents", "refactor"],
+          "example": {
+            "lang": "text",
+            "code": "Spawn a sub-agent (worktree-isolated) to:\n  1. Upgrade React from 18 → 19\n  2. Update all components for the new API\n  3. Run tests and lint until clean\n  4. Report the diff and a list of files that needed manual review\n\n→ Sub-agent works in a side branch.\n→ I review the diff before merging anything.",
+            "note": "isolation: \"worktree\" is an option on the Agent tool."
+          }
+        }
+      ]
+    },
+
+    {
+      "id": "power",
+      "title": "Power moves",
+      "icon": "zap",
+      "description": "Advanced moves that compound — parallel tools, /loop monitoring, /schedule for follow-ups, ultrareview, worktree-isolated agents.",
+      "items": [
+        { "id": "parallel-tools", "title": "Encourage parallel tool calls", "level": "pro",
+          "summary": "Big speedup — Claude can run independent tools concurrently.",
+          "details": "When tasks are independent (multiple reads/greps), Claude can issue several tool calls in one turn. Nudge in CLAUDE.md or by phrasing the request.",
+          "tags": ["performance"],
+          "example": { "lang": "markdown", "code": "# CLAUDE.md\n## Conventions\n- When checks are independent, run them in parallel.", "note": "" } },
+        { "id": "ultrareview", "title": "/ultrareview", "level": "pro",
+          "summary": "Multi-agent cloud review of the current branch (or a PR).",
+          "details": "Spawns several reviewers in parallel — security, correctness, style — and aggregates findings. /ultrareview <PR#> for a GitHub PR.",
+          "tags": ["review", "ci"],
+          "example": { "lang": "text", "code": "/ultrareview\n/ultrareview 1234", "note": "User-triggered and billed." } },
+        { "id": "security-review", "title": "/security-review", "level": "mid",
+          "summary": "Sharper safety pass on the current diff.",
+          "details": "Built-in skill that flags secrets, injection vectors, unsafe APIs, and dependency risks.",
+          "tags": ["security"],
+          "example": { "lang": "text", "code": "/security-review", "note": "" } },
+        { "id": "agent-loop", "title": "/loop for autonomous monitoring", "level": "pro",
+          "summary": "Run a prompt or command on a schedule until you stop it.",
+          "details": "Pair with -p style prompts that check status (deploy, queue, alerts) and only ping on change.",
+          "tags": ["loop"],
+          "example": { "lang": "text", "code": "/loop 5m check the canary error rate; ping me only if > 1%", "note": "Stop with /loop-stop." } },
+
+        { "id": "agent-schedule", "title": "/schedule for follow-ups", "level": "pro",
+          "summary": "Cron-scheduled remote agents — recurring or one-time.",
+          "details": "Great for cleanup PRs, weekly triage, post-launch checks. Runs in the cloud, opens PRs/issues for you.",
+          "tags": ["schedule", "cron"],
+          "examples": [
+            { "lang": "text", "code": "/schedule once in 14 days — clean up the BETA_ROLLOUT flag", "note": "One-time follow-up." },
+            { "lang": "text", "code": "/schedule weekly Mondays — triage stale PRs",                "note": "Recurring routine." }
+          ] },
+        { "id": "agent-worktree-power", "title": "Worktree-isolated work", "level": "pro",
+          "summary": "Run risky changes in a temporary git worktree.",
+          "details": "Spawn a sub-agent with isolation: \"worktree\" so changes land in a side branch you can inspect or discard.",
+          "tags": ["worktree", "agents"],
+          "example": { "lang": "text", "code": "Use a worktree-isolated agent to upgrade React. Report back with the diff.", "note": "" } }
+      ]
+    }
+  ]
+}

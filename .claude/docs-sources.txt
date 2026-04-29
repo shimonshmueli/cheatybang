@@ -1,0 +1,11 @@
+# CheatyBang — official documentation sources for /refresh-cheatsheet
+# One URL per line. Lines starting with '#' are ignored.
+# Add or remove URLs over time as the docs reorganize.
+#
+# Owner: fill in the canonical URLs for the Claude Code docs.
+# Suggested starting points (verify before relying on them):
+#   - https://docs.claude.com/en/docs/claude-code            (root)
+#   - https://github.com/anthropics/claude-code              (README + CHANGELOG)
+#
+# Leaving this file mostly empty is fine — /refresh-cheatsheet will prompt
+# you to add URLs the first time it runs.

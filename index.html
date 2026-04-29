@@ -1,0 +1,1045 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: MIT -->
+<!-- By Shimon Shmueli -->
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CheatyBang — Claude Code cheat sheet</title>
+  <meta name="description" content="A fast, beautiful Claude Code cheat sheet. Pick your environment, pick your level, learn the moves." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+          },
+        },
+      },
+    }
+  </script>
+
+  <link rel="stylesheet" href="styles.css">
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css"
+    integrity="sha384-wFjoQjtV1y5jVHbt0p35Ui8aV8GVpEZkyF99OXWqP/eNJDU93D3Ugxkoyh6Y2I4A"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  >
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234f46e5'%3E%3Cpath d='M13 2 3 14h7l-1 8 11-13h-8l1-7z'/%3E%3C/svg%3E">
+
+  <!-- Pinned versions + SRI hashes for stability. Bump deliberately. -->
+  <script
+    defer
+    src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"
+    integrity="sha384-PCSoOZTpbkikBEtd/+uV3WNdc676i9KUf01KOA8CnJotvlx8rRrETbDuwdjqTYvt"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
+  <script
+    defer
+    src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.14.1/dist/cdn.min.js"
+    integrity="sha384-NArNwzWsUSF+kY2lgW4YriEkjLqi+J+za6HrENUn/3nZqkBnWbxV22kCJEK5Uu6n"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
+  <script
+    defer
+    src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.14.1/dist/cdn.min.js"
+    integrity="sha384-bKXNU7o2Y3Uk/F2PB6U0bMyGZf6pLDnePM70U7sTE3cXUQ+JLgzrr/kwipEh0p23"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
+
+  <!-- Prism: core + autoloader (loads language defs on demand). The autoloader
+       fetches additional language files from cdnjs at runtime; those are not
+       pinned with SRI here. -->
+  <script>
+    window.Prism = window.Prism || {};
+    Prism.manual = true; // we'll trigger highlighting ourselves
+  </script>
+  <script
+    defer
+    src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"
+    integrity="sha384-06z5D//U/xpvxZHuUz92xBvq3DqBBFi7Up53HRrbV7Jlv7Yvh/MZ7oenfUe9iCEt"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
+  <script
+    defer
+    src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"
+    integrity="sha384-Uq05+JLko69eOiPr39ta9bh7kld5PKZoU+fF7g0EXTAriEollhZ+DrN8Q/Oi8J2Q"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
+
+  <script defer src="app.js"></script>
+  <script
+    defer
+    src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"
+    integrity="sha384-l8f0VcPi/M1iHPv8egOnY/15TDwqgbOR1anMIJWvU6nLRgZVLTLSaNqi/TOoT5Fh"
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
+</head>
+
+<body
+  x-data="cheatyBang()"
+  x-init="init()"
+  @keydown.window="handleGlobalKey($event)"
+  :class="(theme === 'dark' ? 'dark ' : '') + 'scheme-' + activeScheme() + ' density-' + density"
+  :style="`background-color: var(--bg); color: var(--text); ${theme === 'dark' ? 'filter: brightness(' + brightness + ');' : ''}`"
+  class="min-h-screen font-sans antialiased"
+>
+
+  <!-- ============ HEADER ============ -->
+  <header data-print="hide" class="sticky top-0 z-30 backdrop-blur surface-translucent border-b" style="border-color: var(--border);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-4">
+
+      <!-- Brand -->
+      <div class="flex items-center gap-2.5 shrink-0">
+        <div
+          class="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm"
+          style="background-color: var(--accent); color: var(--accent-on);"
+          title="Logo placeholder"
+        >
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="currentColor"><path d="M13 2 3 14h7l-1 8 11-13h-8l1-7z"/></svg>
+        </div>
+        <div class="hidden sm:flex flex-col leading-tight">
+          <span class="text-base font-semibold tracking-tight">CheatyBang</span>
+          <span class="text-[11px]" style="color: var(--text-soft);">Claude Code cheat sheet</span>
+        </div>
+      </div>
+
+      <!-- Search -->
+      <div class="flex-1 min-w-0">
+        <div class="relative">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style="color: var(--text-soft);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input
+            x-ref="search"
+            type="search"
+            x-model.debounce.150ms="query"
+            placeholder="Search /commands, hooks, MCP, anything…"
+            class="w-full h-10 pl-10 pr-14 rounded-lg border focus:outline-none focus:ring-2 text-sm"
+            style="background-color: var(--surface-alt); border-color: var(--border); color: var(--text); --tw-ring-color: var(--accent-soft);"
+          />
+          <kbd
+            class="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 items-center justify-center h-6 min-w-[1.5rem] px-1.5 rounded text-[10px] font-mono pointer-events-none border"
+            style="background-color: var(--surface); border-color: var(--border); color: var(--text-soft);"
+            title="Press / or Cmd/Ctrl+K to focus search"
+          >/</kbd>
+        </div>
+      </div>
+
+      <!-- Glossary -->
+      <button
+        @click="openGlossary()"
+        class="hidden sm:flex items-center gap-1.5 h-10 px-3 rounded-lg border text-xs hover:opacity-80 transition shrink-0"
+        style="border-color: var(--border); color: var(--text-muted);"
+        title="Open glossary"
+      >
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+        <span>Glossary</span>
+      </button>
+
+      <!-- Decision trees -->
+      <button
+        @click="openDecisions()"
+        class="hidden sm:flex items-center gap-1.5 h-10 px-3 rounded-lg border text-xs hover:opacity-80 transition shrink-0"
+        style="border-color: var(--border); color: var(--text-muted);"
+        title="Help me choose"
+      >
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/><path d="M12 7v3M12 10c0 2-3 3-6 5M12 10c0 2 3 3 6 5"/></svg>
+        <span>Decide</span>
+      </button>
+
+      <!-- Env + Level indicator (also a shortcut into Settings) -->
+      <button
+        @click="openSettings()"
+        x-show="loaded"
+        class="hidden sm:flex items-center gap-2 h-10 px-3 rounded-lg border text-xs hover:opacity-80 transition shrink-0"
+        style="border-color: var(--border); color: var(--text-muted);"
+        :title="`Environment: ${envLabel(env)} · Level: ${levelLabel(level)} — click to change`"
+      >
+        <span class="flex items-center gap-1.5">
+          <span class="inline-block w-1.5 h-1.5 rounded-full" :style="`background-color: ${envColor(env)}`"></span>
+          <span x-text="envLabel(env)"></span>
+        </span>
+        <span style="color: var(--text-soft);">·</span>
+        <span class="flex items-center gap-1.5">
+          <span class="inline-block w-1.5 h-1.5 rounded-full" :style="`background-color: ${levelColor(level)}`"></span>
+          <span x-text="levelLabel(level)"></span>
+        </span>
+      </button>
+
+      <!-- Settings cog -->
+      <button
+        @click="openSettings()"
+        class="h-10 w-10 rounded-lg border hover:opacity-80 flex items-center justify-center transition shrink-0"
+        style="border-color: var(--border); color: var(--text-muted);"
+        title="Settings"
+      >
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============ MAIN ============ -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+
+    <!-- Loading -->
+    <div x-show="!loaded" class="text-center py-20 text-sm" style="color: var(--text-soft);">
+      Loading cheatsheet…
+    </div>
+
+    <!-- Empty state -->
+    <div x-show="loaded && visibleCategories.length === 0" class="text-center py-20">
+      <p class="font-medium">No matches.</p>
+      <p class="text-sm mt-1" style="color: var(--text-muted);">Try a different search or bump the level up.</p>
+    </div>
+
+    <!-- Active tag filter banner -->
+    <div x-show="tagFilter" x-cloak data-print="hide" class="mb-4 flex items-center gap-2 text-xs" style="color: var(--text-muted);">
+      <span>Filtering by tag</span>
+      <button
+        @click="tagFilter = null"
+        class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 transition hover:opacity-80"
+        :style="`background-color: var(--accent-soft); color: var(--accent);`"
+        title="Clear tag filter"
+      >
+        <span class="font-medium uppercase tracking-wider text-[10px]" x-text="tagFilter"></span>
+        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <!-- Categories -->
+    <div x-show="loaded" class="sections">
+      <template x-for="cat in visibleCategories" :key="cat.id">
+        <section
+          class="rounded-xl border overflow-hidden"
+          style="border-color: var(--border); background-color: var(--surface);"
+        >
+
+          <!-- Card header -->
+          <div class="flex items-center gap-2.5" style="padding: var(--card-header-py) var(--card-px);">
+            <button
+              @click="toggleCategory(cat.id)"
+              class="flex items-center gap-2 group min-w-0 text-left"
+              :aria-expanded="!collapsed[cat.id]"
+            >
+              <h2 class="text-[11px] font-semibold tracking-[0.18em] uppercase truncate" style="color: var(--accent);" x-text="cat.title"></h2>
+              <span class="text-[10px] tabular-nums shrink-0" style="color: var(--text-soft);" x-text="cat._visibleItems.length"></span>
+            </button>
+            <span
+              x-show="cat.description"
+              class="inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold cursor-help opacity-60 hover:opacity-100 transition shrink-0"
+              style="background-color: var(--surface-alt); color: var(--text-muted);"
+              :title="cat.description"
+              aria-label="What is this section?"
+            >?</span>
+            <span class="flex-1"></span>
+            <button
+              @click="toggleCategory(cat.id)"
+              class="shrink-0 -m-1 p-1 rounded hover:opacity-80 transition"
+              :aria-label="collapsed[cat.id] ? 'Expand' : 'Collapse'"
+            >
+              <svg
+                :class="collapsed[cat.id] ? '-rotate-90' : ''"
+                class="w-4 h-4 transition-transform"
+                style="color: var(--text-soft);"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+          </div>
+
+          <!-- Card body -->
+          <div x-show="!collapsed[cat.id]" x-collapse data-print="expand">
+            <div class="border-t" style="border-color: var(--border); padding: var(--card-body-py) var(--card-px);">
+              <ul
+                class="grid gap-x-8 items-start"
+                :style="`grid-template-columns: repeat(${columns}, minmax(0, 1fr)); row-gap: var(--row-gap-y);`"
+              >
+                <template x-for="item in cat._visibleItems" :key="item.id">
+                  <li>
+                    <button
+                      @click="openItem(item)"
+                      class="item-button block w-full h-full text-left px-2 -mx-2 rounded transition group"
+                      :class="!appliesToEnv(item) ? 'opacity-40 hover:opacity-80' : ''"
+                      :title="!appliesToEnv(item) ? 'Doesn’t apply to ' + envLabel(env) + ' — only ' + (item.envs || []).map(envLabel).join(', ') : ''"
+                      style="padding-top: var(--row-py); padding-bottom: var(--row-py);"
+                      onmouseover="this.style.backgroundColor='var(--surface-alt)'"
+                      onmouseout="this.style.backgroundColor=''"
+                    >
+                      <div class="grid grid-cols-[max-content_1fr] gap-x-3 items-baseline">
+                        <span
+                          class="text-sm font-medium"
+                          style="color: var(--accent);"
+                          :class="(item.title || '').startsWith('/') ? 'font-mono' : ''"
+                          x-text="item.title"
+                        ></span>
+                        <span class="text-xs leading-snug" style="color: var(--text-muted);" x-text="item.summary"></span>
+                      </div>
+                    </button>
+                  </li>
+                </template>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </template>
+    </div>
+  </main>
+
+  <!-- ============ MODAL ============ -->
+  <div
+    x-show="modalItem"
+    x-cloak
+    x-transition.opacity
+    @keydown.escape.window="closeModal()"
+    data-print="hide"
+    class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-start justify-center px-4 pt-[8vh] pb-8 overflow-y-auto"
+    @click.self="closeModal()"
+  >
+    <div
+      x-show="modalItem"
+      x-transition:enter="transition ease-out duration-150"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      class="rounded-2xl w-full max-w-2xl shadow-2xl border"
+      style="background-color: var(--surface); border-color: var(--border); color: var(--text);"
+      x-trap.inert.noscroll="modalItem"
+    >
+      <template x-if="modalItem">
+        <div>
+          <!-- modal header -->
+          <div class="flex items-start justify-between p-5 border-b gap-2" style="border-color: var(--border);">
+            <div class="min-w-0 flex-1">
+              <h3
+                class="text-xl font-semibold tracking-tight"
+                :class="(modalItem.title || '').startsWith('/') ? 'font-mono' : ''"
+                style="color: var(--accent);"
+                x-text="modalItem.title"
+              ></h3>
+              <p class="text-sm mt-1" style="color: var(--text-muted);" x-text="modalItem.summary"></p>
+            </div>
+            <button
+              @click="modalPrev()"
+              x-show="flatVisibleItems.length > 1"
+              class="shrink-0 w-8 h-8 rounded-md flex items-center justify-center transition"
+              style="color: var(--text-muted);"
+              onmouseover="this.style.backgroundColor='var(--surface-alt)'"
+              onmouseout="this.style.backgroundColor=''"
+              title="Previous (←)"
+            >
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <button
+              @click="modalNext()"
+              x-show="flatVisibleItems.length > 1"
+              class="shrink-0 w-8 h-8 rounded-md flex items-center justify-center transition"
+              style="color: var(--text-muted);"
+              onmouseover="this.style.backgroundColor='var(--surface-alt)'"
+              onmouseout="this.style.backgroundColor=''"
+              title="Next (→)"
+            >
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+            <button
+              @click="togglePin(modalItem.id)"
+              class="shrink-0 w-8 h-8 rounded-md flex items-center justify-center transition"
+              :style="isPinned(modalItem.id) ? `color: var(--accent);` : `color: var(--text-soft);`"
+              onmouseover="this.style.backgroundColor='var(--surface-alt)'"
+              onmouseout="this.style.backgroundColor=''"
+              :title="isPinned(modalItem.id) ? 'Unpin' : 'Pin to top'"
+              :aria-pressed="isPinned(modalItem.id)"
+            >
+              <svg
+                class="w-5 h-5"
+                viewBox="0 0 24 24"
+                :fill="isPinned(modalItem.id) ? 'currentColor' : 'none'"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <line x1="12" x2="12" y1="17" y2="22"/>
+                <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/>
+              </svg>
+            </button>
+            <button
+              @click="closeModal()"
+              class="shrink-0 w-8 h-8 rounded-md flex items-center justify-center"
+              style="color: var(--text-muted);"
+              onmouseover="this.style.backgroundColor='var(--surface-alt)'"
+              onmouseout="this.style.backgroundColor=''"
+              title="Close"
+            >
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <!-- modal body -->
+          <div class="p-5 space-y-5 max-h-[70vh] overflow-y-auto">
+            <p class="text-sm leading-relaxed whitespace-pre-line" style="color: var(--text);" x-text="modalItem.details"></p>
+
+            <!-- Reference table (when present) -->
+            <div x-show="modalItem.table" class="rounded-lg border overflow-hidden" style="border-color: var(--border);">
+              <div class="overflow-x-auto">
+                <table class="w-full text-xs border-collapse">
+                  <thead>
+                    <tr style="background-color: var(--surface-alt);">
+                      <template x-for="h in (modalItem.table?.headers || [])" :key="h">
+                        <th class="text-left font-semibold px-3 py-2 border-b" style="border-color: var(--border); color: var(--text-muted);" x-text="h"></th>
+                      </template>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template x-for="(row, ri) in (modalItem.table?.rows || [])" :key="ri">
+                      <tr class="border-t" style="border-color: var(--border);">
+                        <template x-for="(cell, ci) in row" :key="ci">
+                          <td
+                            class="px-3 py-2 align-top leading-snug"
+                            style="color: var(--text);"
+                            x-html="(cell || '').replace(/`([^`]+)`/g, '<code class=&quot;font-mono px-1 py-0.5 rounded text-[0.85em]&quot; style=&quot;background-color: var(--surface-alt); color: var(--accent);&quot;>$1</code>')"
+                          ></td>
+                        </template>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+              <div
+                x-show="modalItem.table?.footnote"
+                class="px-3 py-2 text-[11px] border-t"
+                style="border-color: var(--border); color: var(--text-soft); background-color: var(--surface-alt);"
+                x-html="(modalItem.table?.footnote || '').replace(/`([^`]+)`/g, '<code class=&quot;font-mono px-1 py-0.5 rounded text-[0.95em]&quot; style=&quot;background-color: var(--surface); color: var(--text-muted);&quot;>$1</code>')"
+              ></div>
+            </div>
+
+            <!-- Pitfalls (when present) -->
+            <div
+              x-show="modalItem.pitfalls"
+              class="rounded-lg border-l-4 px-4 py-3"
+              style="border-color: #d97706; background-color: rgba(217, 119, 6, 0.07);"
+            >
+              <div class="flex items-center gap-1.5 mb-1">
+                <svg class="w-3.5 h-3.5" style="color: #d97706;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+                <span class="text-[11px] font-semibold tracking-[0.18em] uppercase" style="color: #d97706;">Pitfalls</span>
+              </div>
+              <p class="text-sm leading-relaxed" style="color: var(--text);" x-text="modalItem.pitfalls"></p>
+            </div>
+
+            <!-- Env tabs -->
+            <div>
+              <div class="flex items-center gap-1 border-b mb-3" style="border-color: var(--border);">
+                <template x-for="e in data.envs" :key="e.id">
+                  <button
+                    @click="modalEnv = e.id"
+                    :style="modalEnv === e.id
+                      ? `border-color: var(--accent); color: var(--text);`
+                      : `border-color: transparent; color: var(--text-muted);`"
+                    class="text-xs font-medium px-3 py-2 border-b-2 transition flex items-center gap-1.5 -mb-px"
+                  >
+                    <span class="inline-block w-1.5 h-1.5 rounded-full" :style="`background-color: ${envColor(e.id)}`"></span>
+                    <span x-text="e.label"></span>
+                  </button>
+                </template>
+              </div>
+
+              <div class="space-y-3">
+                <template x-for="(ex, idx) in exampleFor(modalItem, modalEnv).examples" :key="idx">
+                  <div>
+                    <div x-show="ex.note" class="text-xs mb-2" style="color: var(--text-muted);" x-text="ex.note"></div>
+                    <div class="relative group">
+                      <pre
+                        class="rounded-lg text-xs overflow-x-auto leading-relaxed border !m-0"
+                        :class="`language-${ex.lang || 'text'}`"
+                        style="border-color: var(--border);"
+                      ><code
+                        class="modal-code-block"
+                        x-text="ex.code"
+                        :class="`language-${ex.lang || 'text'}`"
+                      ></code></pre>
+                      <button
+                        @click="copyCode(ex.code, $event)"
+                        class="absolute top-2 right-2 text-xs px-2 py-1 rounded-md bg-slate-800 text-slate-200 hover:bg-slate-700 opacity-0 group-hover:opacity-100 focus:opacity-100 transition z-10"
+                      >Copy</button>
+                    </div>
+                  </div>
+                </template>
+
+                <p x-show="exampleFor(modalItem, modalEnv).fallback" class="text-[11px] italic" style="color: var(--text-soft);">
+                  No <span x-text="envLabel(modalEnv)"></span>-specific example — showing the default.
+                </p>
+              </div>
+            </div>
+
+            <!-- Tags -->
+            <div x-show="modalItem.tags && modalItem.tags.length" class="flex flex-wrap gap-1.5 pt-2 items-center">
+              <span class="text-[10px] uppercase tracking-wider mr-1" style="color: var(--text-soft);">Tags</span>
+              <template x-for="tag in (modalItem.tags || [])" :key="tag">
+                <button
+                  @click="filterByTag(tag)"
+                  class="text-[10px] uppercase tracking-wider font-medium px-2 py-0.5 rounded hover:opacity-80 transition cursor-pointer"
+                  style="background-color: var(--surface-alt); color: var(--text-muted);"
+                  :title="`Filter by tag: ${tag}`"
+                  x-text="tag"
+                ></button>
+              </template>
+            </div>
+
+            <!-- Meta (last-updated + minimum Claude Code version, when present) -->
+            <div
+              x-show="modalItem.updated || modalItem.since"
+              class="flex items-center gap-4 text-[11px] pt-1"
+              style="color: var(--text-soft);"
+            >
+              <span x-show="modalItem.since" class="flex items-center gap-1">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+                Since Claude Code v<span x-text="modalItem.since"></span>
+              </span>
+              <span x-show="modalItem.updated" class="flex items-center gap-1">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
+                Updated <span x-text="modalItem.updated"></span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <!-- ============ GLOSSARY MODAL ============ -->
+  <div
+    x-show="glossaryOpen"
+    x-cloak
+    x-transition.opacity
+    @keydown.escape.window="closeGlossary()"
+    data-print="hide"
+    class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-start justify-center px-4 pt-[8vh] pb-8 overflow-y-auto"
+    @click.self="closeGlossary()"
+  >
+    <div
+      x-show="glossaryOpen"
+      x-transition:enter="transition ease-out duration-150"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      class="rounded-2xl w-full max-w-2xl shadow-2xl border"
+      style="background-color: var(--surface); border-color: var(--border); color: var(--text);"
+      x-trap.inert.noscroll="glossaryOpen"
+    >
+      <!-- modal header -->
+      <div class="flex items-start justify-between p-5 border-b gap-2" style="border-color: var(--border);">
+        <div class="min-w-0 flex-1">
+          <h3 class="text-xl font-semibold tracking-tight" style="color: var(--accent);">Glossary</h3>
+          <p class="text-sm mt-1" style="color: var(--text-muted);">Quick definitions for the jargon you'll bump into.</p>
+        </div>
+        <button
+          @click="copyGlossary($event)"
+          class="shrink-0 h-8 px-2.5 rounded-md text-xs font-medium border flex items-center gap-1.5 transition"
+          style="border-color: var(--border); color: var(--text-muted);"
+          onmouseover="this.style.backgroundColor='var(--surface-alt)'"
+          onmouseout="this.style.backgroundColor=''"
+          title="Copy glossary as Markdown"
+        >
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy
+        </button>
+        <button
+          @click="shareGlossary($event)"
+          class="shrink-0 h-8 px-2.5 rounded-md text-xs font-medium border flex items-center gap-1.5 transition"
+          style="border-color: var(--border); color: var(--text-muted);"
+          onmouseover="this.style.backgroundColor='var(--surface-alt)'"
+          onmouseout="this.style.backgroundColor=''"
+          title="Share link to glossary"
+        >
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share
+        </button>
+        <button
+          @click="closeGlossary()"
+          class="shrink-0 w-8 h-8 rounded-md flex items-center justify-center"
+          style="color: var(--text-muted);"
+          onmouseover="this.style.backgroundColor='var(--surface-alt)'"
+          onmouseout="this.style.backgroundColor=''"
+          title="Close"
+        >
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- modal body -->
+      <div class="p-5 max-h-[70vh] overflow-y-auto">
+        <dl class="space-y-3">
+          <template x-for="t in (glossary.terms || [])" :key="t.term">
+            <div class="grid grid-cols-1 sm:grid-cols-[10rem_1fr] gap-x-4 gap-y-1 pb-3 border-b last:border-b-0" style="border-color: var(--border);">
+              <dt class="text-sm font-semibold" style="color: var(--accent);" x-text="t.term"></dt>
+              <dd class="text-sm leading-relaxed" style="color: var(--text);" x-html="(t.definition || '').replace(/`([^`]+)`/g, '<code class=&quot;font-mono px-1 py-0.5 rounded text-[0.85em]&quot; style=&quot;background-color: var(--surface-alt); color: var(--text-muted);&quot;>$1</code>')"></dd>
+            </div>
+          </template>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ DECISIONS MODAL ============ -->
+  <div
+    x-show="decisionsOpen"
+    x-cloak
+    x-transition.opacity
+    @keydown.escape.window="closeDecisions()"
+    data-print="hide"
+    class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-start justify-center px-4 pt-[8vh] pb-8 overflow-y-auto"
+    @click.self="closeDecisions()"
+  >
+    <div
+      x-show="decisionsOpen"
+      x-transition:enter="transition ease-out duration-150"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      class="rounded-2xl w-full max-w-2xl shadow-2xl border"
+      style="background-color: var(--surface); border-color: var(--border); color: var(--text);"
+      x-trap.inert.noscroll="decisionsOpen"
+    >
+      <!-- modal header -->
+      <div class="flex items-start justify-between p-5 border-b gap-2" style="border-color: var(--border);">
+        <div class="min-w-0 flex-1">
+          <h3 class="text-xl font-semibold tracking-tight" style="color: var(--accent);">
+            <span x-show="!currentTree">Help me choose</span>
+            <span x-show="currentTree" x-text="currentTree?.title"></span>
+          </h3>
+          <p class="text-sm mt-1" style="color: var(--text-muted);">
+            <span x-show="!currentTree">Pick a decision and answer a few short questions.</span>
+            <span x-show="currentTree && currentNode?.type === 'question'">Answer to advance.</span>
+            <span x-show="currentTree && currentNode?.type === 'recommendation'">Recommendation</span>
+          </p>
+        </div>
+        <button
+          x-show="currentTree"
+          @click="decisionBack()"
+          class="shrink-0 h-8 px-2.5 rounded-md text-xs font-medium border flex items-center gap-1.5 transition"
+          style="border-color: var(--border); color: var(--text-muted);"
+          onmouseover="this.style.backgroundColor='var(--surface-alt)'"
+          onmouseout="this.style.backgroundColor=''"
+          title="Go back one step"
+        >
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+          Back
+        </button>
+        <button
+          x-show="currentTree && currentNode?.type === 'recommendation'"
+          @click="decisionRestart()"
+          class="shrink-0 h-8 px-2.5 rounded-md text-xs font-medium border flex items-center gap-1.5 transition"
+          style="border-color: var(--border); color: var(--text-muted);"
+          onmouseover="this.style.backgroundColor='var(--surface-alt)'"
+          onmouseout="this.style.backgroundColor=''"
+          title="Start this tree over"
+        >
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+          Restart
+        </button>
+        <button
+          @click="closeDecisions()"
+          class="shrink-0 w-8 h-8 rounded-md flex items-center justify-center"
+          style="color: var(--text-muted);"
+          onmouseover="this.style.backgroundColor='var(--surface-alt)'"
+          onmouseout="this.style.backgroundColor=''"
+          title="Close"
+        >
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- body: picker -->
+      <div x-show="!currentTree" class="p-5 max-h-[70vh] overflow-y-auto space-y-2">
+        <template x-for="t in (decisions.trees || [])" :key="t.id">
+          <button
+            @click="startTree(t.id)"
+            class="block w-full text-left rounded-lg border p-4 transition"
+            style="border-color: var(--border);"
+            onmouseover="this.style.backgroundColor='var(--surface-alt)'"
+            onmouseout="this.style.backgroundColor=''"
+          >
+            <div class="text-sm font-semibold" style="color: var(--accent);" x-text="t.title"></div>
+            <div class="text-xs mt-1" style="color: var(--text-muted);" x-text="t.blurb"></div>
+          </button>
+        </template>
+      </div>
+
+      <!-- body: question -->
+      <div x-show="currentTree && currentNode?.type === 'question'" class="p-5 max-h-[70vh] overflow-y-auto">
+        <p class="text-base font-medium mb-3" x-text="currentNode?.prompt"></p>
+        <div class="space-y-2">
+          <template x-for="(opt, i) in (currentNode?.options || [])" :key="i">
+            <button
+              @click="pickOption(opt.next)"
+              class="block w-full text-left rounded-lg border p-3 transition"
+              style="border-color: var(--border);"
+              onmouseover="this.style.backgroundColor='var(--surface-alt)'"
+              onmouseout="this.style.backgroundColor=''"
+            >
+              <div class="flex items-center justify-between gap-3">
+                <span class="text-sm" x-text="opt.label"></span>
+                <svg class="w-4 h-4 shrink-0" style="color: var(--text-soft);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+              </div>
+            </button>
+          </template>
+        </div>
+        <p class="text-[11px] mt-4" style="color: var(--text-soft);">
+          Step <span x-text="decisionPath.length"></span> in “<span x-text="currentTree?.title"></span>”
+        </p>
+      </div>
+
+      <!-- body: recommendation -->
+      <div x-show="currentTree && currentNode?.type === 'recommendation'" class="p-5 max-h-[70vh] overflow-y-auto">
+        <div class="rounded-lg border p-4" style="border-color: var(--accent); background-color: var(--accent-soft);">
+          <div class="text-[11px] font-semibold tracking-[0.18em] uppercase mb-1" style="color: var(--accent);">Recommended</div>
+          <h4 class="text-lg font-semibold tracking-tight" x-text="currentNode?.title"></h4>
+          <p class="text-sm mt-2 leading-relaxed" style="color: var(--text);" x-text="currentNode?.summary"></p>
+        </div>
+        <div x-show="resolveLinks(currentNode?.links).length > 0" class="mt-4">
+          <div class="text-[11px] font-semibold tracking-[0.18em] uppercase mb-2" style="color: var(--text-muted);">Related items</div>
+          <div class="space-y-1">
+            <template x-for="item in resolveLinks(currentNode?.links)" :key="item.id">
+              <button
+                @click="openItemFromDecisions(item)"
+                class="block w-full text-left rounded px-2 -mx-2 py-1.5 transition"
+                onmouseover="this.style.backgroundColor='var(--surface-alt)'"
+                onmouseout="this.style.backgroundColor=''"
+              >
+                <div class="grid grid-cols-[max-content_1fr] gap-x-3 items-baseline">
+                  <span
+                    class="text-sm font-medium"
+                    style="color: var(--accent);"
+                    :class="(item.title || '').startsWith('/') ? 'font-mono' : ''"
+                    x-text="item.title"
+                  ></span>
+                  <span class="text-xs leading-snug" style="color: var(--text-muted);" x-text="item.summary"></span>
+                </div>
+              </button>
+            </template>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ ABOUT / PRIVACY MODAL ============ -->
+  <div
+    x-show="aboutOpen"
+    x-cloak
+    x-transition.opacity
+    @keydown.escape.window="closeAbout()"
+    data-print="hide"
+    class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-start justify-center px-4 pt-[8vh] pb-8 overflow-y-auto"
+    @click.self="closeAbout()"
+  >
+    <div
+      x-show="aboutOpen"
+      x-transition:enter="transition ease-out duration-150"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      class="rounded-2xl w-full max-w-xl shadow-2xl border"
+      style="background-color: var(--surface); border-color: var(--border); color: var(--text);"
+      x-trap.inert.noscroll="aboutOpen"
+    >
+      <div class="flex items-start justify-between p-5 border-b gap-2" style="border-color: var(--border);">
+        <div class="min-w-0 flex-1">
+          <h3 class="text-xl font-semibold tracking-tight" style="color: var(--accent);">About &amp; Privacy</h3>
+          <p class="text-sm mt-1" style="color: var(--text-muted);">A community reference for Claude Code.</p>
+        </div>
+        <button
+          @click="closeAbout()"
+          class="shrink-0 w-8 h-8 rounded-md flex items-center justify-center"
+          style="color: var(--text-muted);"
+          onmouseover="this.style.backgroundColor='var(--surface-alt)'"
+          onmouseout="this.style.backgroundColor=''"
+          title="Close"
+        >
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-5 max-h-[70vh] overflow-y-auto space-y-4 text-sm leading-relaxed">
+        <section>
+          <h4 class="text-[11px] font-semibold tracking-[0.18em] uppercase mb-1" style="color: var(--text-muted);">What this is</h4>
+          <p>CheatyBang is a static cheat sheet for <strong>Claude Code</strong>. It runs entirely in your browser. There's no backend, no analytics, no tracking, no account.</p>
+        </section>
+
+        <section>
+          <h4 class="text-[11px] font-semibold tracking-[0.18em] uppercase mb-1" style="color: var(--text-muted);">What we collect</h4>
+          <p><strong>Nothing.</strong> Your settings (theme, scheme, density, environment, level, pinned items) are stored in your browser's <code style="background-color: var(--surface-alt); padding: 1px 4px; border-radius: 3px;">localStorage</code> and never leave your device.</p>
+        </section>
+
+        <section>
+          <h4 class="text-[11px] font-semibold tracking-[0.18em] uppercase mb-1" style="color: var(--text-muted);">License</h4>
+          <p>CheatyBang is licensed under <strong>MIT</strong>. See <code style="background-color: var(--surface-alt); padding: 1px 4px; border-radius: 3px;">LICENSE</code> in the repository.</p>
+        </section>
+
+        <section>
+          <h4 class="text-[11px] font-semibold tracking-[0.18em] uppercase mb-1" style="color: var(--text-muted);">Disclaimer</h4>
+          <p>This site is a community reference, not official Claude Code documentation. Verify anything safety-critical against the official docs at Anthropic. The maintainer makes no warranty as to accuracy, completeness, or fitness for any particular purpose.</p>
+        </section>
+
+        <section>
+          <h4 class="text-[11px] font-semibold tracking-[0.18em] uppercase mb-1" style="color: var(--text-muted);">Third-party assets</h4>
+          <p>This page loads CSS / JS from public CDNs (Tailwind Play, Alpine.js, Fuse.js, Prism.js) and fonts from Google Fonts. Those services may log basic request metadata under their own privacy policies. No data we control is sent to them.</p>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SETTINGS DRAWER ============ -->
+  <div
+    x-show="settingsOpen"
+    x-cloak
+    @keydown.escape.window="closeSettings()"
+    data-print="hide"
+    class="fixed inset-0 z-40"
+  >
+    <div
+      x-show="settingsOpen"
+      x-transition.opacity
+      @click="closeSettings()"
+      class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+    ></div>
+
+    <aside
+      x-show="settingsOpen"
+      x-transition:enter="transition ease-out duration-200"
+      x-transition:enter-start="translate-x-full"
+      x-transition:enter-end="translate-x-0"
+      x-transition:leave="transition ease-in duration-150"
+      x-transition:leave-start="translate-x-0"
+      x-transition:leave-end="translate-x-full"
+      class="absolute right-0 top-0 h-full w-full max-w-sm shadow-2xl flex flex-col border-l"
+      style="background-color: var(--surface); border-color: var(--border); color: var(--text);"
+      x-trap.inert.noscroll="settingsOpen"
+    >
+      <header class="flex items-center justify-between p-4 border-b" style="border-color: var(--border);">
+        <h2 class="text-base font-semibold tracking-tight">Settings</h2>
+        <button
+          @click="closeSettings()"
+          class="w-8 h-8 rounded-md flex items-center justify-center"
+          style="color: var(--text-muted);"
+          onmouseover="this.style.backgroundColor='var(--surface-alt)'"
+          onmouseout="this.style.backgroundColor=''"
+          title="Close"
+        >
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </header>
+
+      <div class="p-5 space-y-6 overflow-y-auto">
+
+        <!-- Environment -->
+        <section>
+          <h3 class="text-[11px] font-semibold tracking-[0.18em] uppercase mb-2" style="color: var(--text-muted);">Environment</h3>
+          <div class="grid grid-cols-2 gap-2">
+            <template x-for="e in data.envs" :key="e.id">
+              <button
+                @click="env = e.id"
+                :style="env === e.id
+                  ? `border-color: var(--accent); background-color: var(--accent-soft);`
+                  : `border-color: var(--border);`"
+                class="text-left rounded-lg border p-3 transition"
+              >
+                <div class="flex items-center gap-2">
+                  <span class="inline-block w-2 h-2 rounded-full" :style="`background-color: ${envColor(e.id)}`"></span>
+                  <span class="text-sm font-medium" x-text="e.label"></span>
+                </div>
+                <span class="text-xs mt-0.5 block" style="color: var(--text-muted);" x-text="e.hint"></span>
+              </button>
+            </template>
+          </div>
+
+          <!-- Env-filter mode -->
+          <div class="mt-3">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs" style="color: var(--text-muted);">Items not in this env</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                @click="envFilter = 'dim'"
+                :style="envFilter === 'dim'
+                  ? `border-color: var(--accent); background-color: var(--accent-soft);`
+                  : `border-color: var(--border);`"
+                class="text-center rounded-lg border py-1.5 text-xs transition"
+              >Dim</button>
+              <button
+                @click="envFilter = 'hide'"
+                :style="envFilter === 'hide'
+                  ? `border-color: var(--accent); background-color: var(--accent-soft);`
+                  : `border-color: var(--border);`"
+                class="text-center rounded-lg border py-1.5 text-xs transition"
+              >Hide</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Level -->
+        <section>
+          <h3 class="text-[11px] font-semibold tracking-[0.18em] uppercase mb-1" style="color: var(--text-muted);">Level</h3>
+          <p class="text-xs mb-2" style="color: var(--text-soft);">Each level shows everything below it.</p>
+          <div class="grid grid-cols-3 gap-2">
+            <template x-for="l in data.levels" :key="l.id">
+              <button
+                @click="level = l.id"
+                :style="level === l.id
+                  ? `border-color: var(--accent); background-color: var(--accent-soft);`
+                  : `border-color: var(--border);`"
+                class="text-center rounded-lg border py-2 transition"
+              >
+                <span class="text-sm font-medium" x-text="l.label"></span>
+              </button>
+            </template>
+          </div>
+        </section>
+
+        <!-- Columns -->
+        <section>
+          <h3 class="text-[11px] font-semibold tracking-[0.18em] uppercase mb-2" style="color: var(--text-muted);">Columns</h3>
+          <div class="grid grid-cols-3 gap-2">
+            <template x-for="n in [1, 2, 3]" :key="n">
+              <button
+                @click="columns = n"
+                :style="columns === n
+                  ? `border-color: var(--accent); background-color: var(--accent-soft);`
+                  : `border-color: var(--border);`"
+                class="text-center rounded-lg border py-2 transition"
+              >
+                <span class="text-sm font-medium tabular-nums" x-text="n"></span>
+              </button>
+            </template>
+          </div>
+        </section>
+
+        <!-- Density -->
+        <section>
+          <h3 class="text-[11px] font-semibold tracking-[0.18em] uppercase mb-2" style="color: var(--text-muted);">Density</h3>
+          <div class="grid grid-cols-3 gap-2">
+            <template x-for="d in ['compact', 'cozy', 'comfortable']" :key="d">
+              <button
+                @click="density = d"
+                :style="density === d
+                  ? `border-color: var(--accent); background-color: var(--accent-soft);`
+                  : `border-color: var(--border);`"
+                class="text-center rounded-lg border py-2 transition capitalize"
+              >
+                <span class="text-sm font-medium" x-text="d"></span>
+              </button>
+            </template>
+          </div>
+        </section>
+
+        <!-- Theme -->
+        <section>
+          <h3 class="text-[11px] font-semibold tracking-[0.18em] uppercase mb-2" style="color: var(--text-muted);">Theme</h3>
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              @click="theme = 'light'"
+              :style="theme === 'light'
+                ? `border-color: var(--accent); background-color: var(--accent-soft);`
+                : `border-color: var(--border);`"
+              class="rounded-lg border py-2 px-3 flex items-center justify-center gap-2 transition"
+            >
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+              <span class="text-sm font-medium">Light</span>
+            </button>
+            <button
+              @click="theme = 'dark'"
+              :style="theme === 'dark'
+                ? `border-color: var(--accent); background-color: var(--accent-soft);`
+                : `border-color: var(--border);`"
+              class="rounded-lg border py-2 px-3 flex items-center justify-center gap-2 transition"
+            >
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              <span class="text-sm font-medium">Dark</span>
+            </button>
+          </div>
+
+          <!-- Brightness slider (dark mode only) -->
+          <div x-show="theme === 'dark'" x-cloak class="mt-3">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs" style="color: var(--text-muted);">Brightness</span>
+              <button
+                @click="brightness = 1"
+                class="text-[11px] tabular-nums hover:underline"
+                style="color: var(--text-soft);"
+                title="Reset to 100%"
+                x-text="Math.round(brightness * 100) + '%'"
+              ></button>
+            </div>
+            <input
+              type="range"
+              min="0.7"
+              max="1.3"
+              step="0.01"
+              x-model.number="brightness"
+              class="w-full"
+              style="accent-color: var(--accent);"
+            />
+          </div>
+        </section>
+
+        <!-- Color scheme (per-theme) -->
+        <section>
+          <div class="flex items-baseline justify-between mb-2">
+            <h3 class="text-[11px] font-semibold tracking-[0.18em] uppercase" style="color: var(--text-muted);">Color scheme</h3>
+            <span class="text-[10px] uppercase tracking-wider" style="color: var(--text-soft);">
+              for <span x-text="theme"></span> theme
+            </span>
+          </div>
+          <p class="text-xs mb-2" style="color: var(--text-soft);">
+            Light and Dark each remember their own scheme.
+          </p>
+          <div class="grid grid-cols-2 gap-2">
+            <template x-for="s in schemes" :key="s.id">
+              <button
+                @click="setScheme(s.id)"
+                :style="activeScheme() === s.id
+                  ? `border-color: var(--accent); background-color: var(--accent-soft);`
+                  : `border-color: var(--border);`"
+                class="text-left rounded-lg border p-3 transition"
+              >
+                <div class="flex items-center gap-2 mb-0.5">
+                  <span
+                    class="inline-block w-4 h-4 rounded-full ring-2"
+                    :style="`background-color: ${s.swatch}; --tw-ring-color: var(--surface);`"
+                  ></span>
+                  <span class="text-sm font-medium" x-text="s.label"></span>
+                </div>
+                <span class="text-xs block" style="color: var(--text-muted);" x-text="s.hint"></span>
+              </button>
+            </template>
+          </div>
+        </section>
+
+      </div>
+    </aside>
+  </div>
+
+  <!-- ============ FOOTER ============ -->
+  <footer data-print="hide" class="border-t mt-12" style="border-color: var(--border);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs" style="color: var(--text-soft);">
+      <span>
+        MIT &middot; By Shimon Shmueli &middot;
+        <button @click="openAbout()" class="underline hover:opacity-80">About &amp; Privacy</button>
+      </span>
+      <span>CheatyBang v<span x-text="data.version || '0.1.0'"></span> — built with Claude Code</span>
+    </div>
+  </footer>
+
+</body>
+</html>

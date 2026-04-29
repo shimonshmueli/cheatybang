@@ -1,0 +1,26 @@
+{
+  "_license": "SPDX-License-Identifier: MIT — By Shimon Shmueli",
+  "version": "0.1.0",
+  "terms": [
+    { "term": "Session",            "definition": "One run of `claude` from launch to exit. Each session has its own conversation history; project memory (CLAUDE.md) persists across sessions." },
+    { "term": "Context window",     "definition": "The total text the model holds at once — your prompts, Claude's replies, files read, tool definitions. Fills up over time; managed with `/clear` and `/compact`." },
+    { "term": "Token",              "definition": "Unit for measuring text (~¾ of a word). Usage limits and API billing are counted in tokens. Monitor with `/cost`." },
+    { "term": "CLAUDE.md",          "definition": "Markdown file Claude reads at session start. Holds project conventions, commands, constraints. Lives in the repo root, your home dir, or any sub-folder. Create with `/init`." },
+    { "term": "Memory",             "definition": "Standing instructions stored in CLAUDE.md files (user and project) that survive across sessions. Edit with `/memory` or save quickly with a `#`-prefixed message." },
+    { "term": "Slash command",      "definition": "Built-in or user-defined command typed with a leading `/`, e.g. `/init`, `/clear`, `/review`. List them with `/help`." },
+    { "term": "Custom command",     "definition": "A markdown file in `.claude/commands/<name>.md` that becomes a `/`-command. Frontmatter declares allowed tools, model, and arguments." },
+    { "term": "Hook",               "definition": "Shell command the harness runs automatically at lifecycle events (PreToolUse, PostToolUse, Stop, SessionStart, etc.). Used for auto-formatting, blocking unsafe calls, notifications." },
+    { "term": "MCP",                "definition": "Model Context Protocol — open standard for plugging external systems (GitHub, databases, internal APIs) into Claude as callable tools." },
+    { "term": "MCP server",         "definition": "Process that exposes tools and resources over MCP. Local (stdio subprocess) or remote (HTTP/SSE). Managed via `/mcp` and `mcpServers` in settings.json." },
+    { "term": "Sub-agent",          "definition": "Separate, focused Claude instance spawned for a sub-task (Explore, Plan, general-purpose, or your own from `.claude/agents/`). Runs in its own context and reports back." },
+    { "term": "Skill",              "definition": "Packaged instructions + helper files that teach Claude a specific workflow (e.g. generate release notes, run a security review). Invocable like a slash command and can auto-activate." },
+    { "term": "Tool",               "definition": "Something Claude can call: built-ins like Read, Edit, Write, Bash, Grep, plus any MCP-provided tools. Permission rules control which tools need approval." },
+    { "term": "Permission rule",    "definition": "An `allow`, `deny`, or `ask` entry in settings.json that decides whether a tool call runs automatically, prompts you, or is hard-blocked." },
+    { "term": "Scope",              "definition": "Where settings live: **user** (`~/.claude/settings.json`, applies everywhere), **project** (`<repo>/.claude/settings.json`, committed), **local** (`<repo>/.claude/settings.local.json`, gitignored — for secrets). They deep-merge, with local winning." },
+    { "term": "Plan mode",          "definition": "Read-only mode: Claude explores and proposes a plan but will not edit files or run commands. Toggle with Shift+Tab or `/plan`." },
+    { "term": "Accept Edits mode",  "definition": "Auto-approves file edits for the rest of the session; shell commands still prompt. Toggle with Shift+Tab." },
+    { "term": "Headless / print mode", "definition": "Non-interactive `claude -p \"prompt\"` — runs once, prints to stdout, exits. Used in scripts and CI. Pair with `--output-format json` for parseable results." },
+    { "term": "Worktree isolation", "definition": "Running a sub-agent on a temporary git worktree so its changes are sandboxed in a side branch. Useful for risky refactors and parallel exploration." },
+    { "term": "Status line",        "definition": "Customizable line at the bottom of the prompt. `statusLine.command` in settings.json runs each turn; its stdout becomes your status — git branch, model, token spend, anything." }
+  ]
+}

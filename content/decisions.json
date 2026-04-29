@@ -1,0 +1,171 @@
+{
+  "_license": "SPDX-License-Identifier: MIT — By Shimon Shmueli",
+  "version": "0.1.0",
+  "trees": [
+    {
+      "id": "reusable",
+      "title": "I want a reusable workflow",
+      "blurb": "Sub-agent vs skill vs custom slash command — easy to mix up.",
+      "root": "q-trigger",
+      "nodes": {
+        "q-trigger": {
+          "type": "question",
+          "prompt": "How should it kick off?",
+          "options": [
+            { "label": "Claude picks it up automatically when intent matches", "next": "r-skill" },
+            { "label": "I trigger it explicitly by typing /name",                "next": "q-shape" }
+          ]
+        },
+        "q-shape": {
+          "type": "question",
+          "prompt": "What's the shape of the work?",
+          "options": [
+            { "label": "A single prompt template — runs in my main session",     "next": "r-command" },
+            { "label": "A focused, multi-step worker with its own context",      "next": "r-subagent" }
+          ]
+        },
+        "r-skill": {
+          "type": "recommendation",
+          "title": "Use a Skill",
+          "summary": "Skills auto-activate when their description matches the user's intent. Drop a SKILL.md in .claude/skills/<name>/. They can include helper scripts and files.",
+          "links": ["skills-custom", "skills-builtin"]
+        },
+        "r-command": {
+          "type": "recommendation",
+          "title": "Use a Custom slash command",
+          "summary": "Markdown file in .claude/commands/<name>.md. Frontmatter declares allowed tools, model, and arguments. Body is the prompt template.",
+          "links": ["custom-commands"]
+        },
+        "r-subagent": {
+          "type": "recommendation",
+          "title": "Use a Custom sub-agent",
+          "summary": "Markdown file in .claude/agents/<name>.md with name, description, tools, model. Claude routes work to it when the description matches; it runs in its own context.",
+          "links": ["custom-agent", "agent-worktree"]
+        }
+      }
+    },
+
+    {
+      "id": "scope",
+      "title": "Where do my settings go?",
+      "blurb": "User vs project vs local — three scopes that deep-merge.",
+      "root": "q-share",
+      "nodes": {
+        "q-share": {
+          "type": "question",
+          "prompt": "Should this apply to your teammates too?",
+          "options": [
+            { "label": "Yes — committed in the repo for everyone",          "next": "q-secret" },
+            { "label": "No — just my machine",                              "next": "q-personal" }
+          ]
+        },
+        "q-secret": {
+          "type": "question",
+          "prompt": "Does it contain secrets (API keys, tokens)?",
+          "options": [
+            { "label": "Yes",  "next": "r-local" },
+            { "label": "No",   "next": "r-project" }
+          ]
+        },
+        "q-personal": {
+          "type": "question",
+          "prompt": "Should it apply to every project, or just this repo?",
+          "options": [
+            { "label": "Every project on this machine",  "next": "r-user" },
+            { "label": "Just this repo",                  "next": "r-local" }
+          ]
+        },
+        "r-user": {
+          "type": "recommendation",
+          "title": "User scope — ~/.claude/settings.json",
+          "summary": "Loaded for every Claude Code session on your machine. Use for personal preferences and globally-applicable hooks.",
+          "links": ["settings-json"]
+        },
+        "r-project": {
+          "type": "recommendation",
+          "title": "Project scope — <repo>/.claude/settings.json (committed)",
+          "summary": "Shared with the team. Hooks, MCP servers, conventions everyone in the repo should get.",
+          "links": ["settings-json"]
+        },
+        "r-local": {
+          "type": "recommendation",
+          "title": "Local scope — <repo>/.claude/settings.local.json (gitignored)",
+          "summary": "Per-machine, never committed. Right place for secrets, personal experiments, machine-specific paths. Wins over project + user on conflicts.",
+          "links": ["settings-local", "settings-json"]
+        }
+      }
+    },
+
+    {
+      "id": "automate",
+      "title": "How should I automate this?",
+      "blurb": "Hook vs /loop vs /schedule — depends on the trigger.",
+      "root": "q-when",
+      "nodes": {
+        "q-when": {
+          "type": "question",
+          "prompt": "When should it run?",
+          "options": [
+            { "label": "On every tool call / edit / session boundary",         "next": "r-hook" },
+            { "label": "On a fixed interval while I'm working",                 "next": "r-loop" },
+            { "label": "On a clock / cron schedule, even when I'm offline",     "next": "r-schedule" }
+          ]
+        },
+        "r-hook": {
+          "type": "recommendation",
+          "title": "Use a Hook",
+          "summary": "Configured in settings.json. Fires deterministically on lifecycle events — no model trust required. Best for formatting, blocking, logging, notifications.",
+          "links": ["hooks-basics", "hook-pretooluse", "hook-posttooluse", "hook-stop"]
+        },
+        "r-loop": {
+          "type": "recommendation",
+          "title": "Use /loop",
+          "summary": "Re-runs a prompt or command on an interval inside your active session. Stop with /loop-stop. Good for monitoring while you work.",
+          "links": ["loop", "agent-loop"]
+        },
+        "r-schedule": {
+          "type": "recommendation",
+          "title": "Use /schedule",
+          "summary": "Cron-scheduled remote agent. Runs in the cloud on a clock — perfect for one-time follow-ups or recurring weekly work.",
+          "links": ["schedule", "agent-schedule"]
+        }
+      }
+    },
+
+    {
+      "id": "carefulness",
+      "title": "How careful should this session be?",
+      "blurb": "Plan vs Accept Edits vs Default — pick the right safety level.",
+      "root": "q-stakes",
+      "nodes": {
+        "q-stakes": {
+          "type": "question",
+          "prompt": "What's the goal of this session?",
+          "options": [
+            { "label": "Explore an idea, decide an approach — no edits yet", "next": "r-plan" },
+            { "label": "Execute a clear task — many edits expected",          "next": "r-accept" },
+            { "label": "Mixed — some research, some edits",                   "next": "r-default" }
+          ]
+        },
+        "r-plan": {
+          "type": "recommendation",
+          "title": "Plan mode",
+          "summary": "Read-only. Claude proposes a plan, can't edit files or run commands. Approve the plan to execute. Toggle with Shift+Tab or /plan.",
+          "links": ["plan-mode"]
+        },
+        "r-accept": {
+          "type": "recommendation",
+          "title": "Accept Edits mode",
+          "summary": "Auto-approves Edit/Write for the rest of the session. Bash and risky tools still ask. Toggle with Shift+Tab.",
+          "links": ["auto-accept"]
+        },
+        "r-default": {
+          "type": "recommendation",
+          "title": "Default mode",
+          "summary": "Each tool call asks for approval based on your permission rules. The right starting point — switch into Plan or Accept Edits when scope clarifies.",
+          "links": ["interactive", "permission-allow"]
+        }
+      }
+    }
+  ]
+}
