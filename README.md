@@ -4,7 +4,7 @@
 
 <!-- Add a screenshot here: assets/screenshot.png -->
 
-**[Live →](https://cheatybang.vercel.app)**
+**[Live → cheatybang.vercel.app](https://cheatybang.vercel.app/)**
 
 Pick your environment (Desktop · CLI · VS Code · Cursor), pick your level (Beginner → Mid → Pro), and get the moves that apply to you — right now, in one page.
 
