@@ -1,0 +1,47 @@
+name: Feature request
+description: Suggest an improvement or new capability
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: Good ideas are welcome. Be as specific as you can — vague requests are hard to act on.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - New cheat sheet content (item, section, or example)
+        - Search or filtering
+        - Navigation or keyboard shortcuts
+        - Themes or appearance
+        - Glossary or decision trees
+        - Mobile / responsive layout
+        - Performance
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the situation where you felt something was missing or annoying.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would you like to see? Sketches, examples, or links to prior art are helpful.
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+      description: Any workarounds you're using today, or other approaches you thought about.
+    validations:
+      required: false

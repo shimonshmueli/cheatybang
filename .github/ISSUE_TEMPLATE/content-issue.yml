@@ -1,0 +1,93 @@
+name: Content issue
+description: Wrong, outdated, or missing cheat sheet content
+labels: ["content"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping keep CheatyBang accurate. Please fill in as much as you can.
+
+  - type: dropdown
+    id: issue-type
+    attributes:
+      label: Type of content issue
+      options:
+        - Wrong or inaccurate information
+        - Outdated (changed in a recent Claude Code release)
+        - Missing item that should exist
+        - Missing environment-specific example
+        - Typo or wording improvement
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: item
+    attributes:
+      label: Item title or ID
+      description: The exact title shown on the card, or the `id` from cheatsheet.json if you know it.
+      placeholder: e.g. "/compact" or "Auto-accept mode"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: section
+    attributes:
+      label: Section
+      options:
+        - Getting started
+        - Sessions & modes
+        - Slash commands
+        - Memory & CLAUDE.md
+        - Quick references & shortcuts
+        - Hooks
+        - MCP servers
+        - Sub-agents & skills
+        - Permissions & settings
+        - IDE integration
+        - Headless & scripting
+        - Integrations & deployments
+        - Workflow recipes
+        - Power moves
+        - Not sure / new item
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-is-wrong
+    attributes:
+      label: What's wrong or missing?
+      description: Describe the issue clearly. For outdated items, include what changed.
+    validations:
+      required: true
+
+  - type: textarea
+    id: correct-info
+    attributes:
+      label: What should it say instead?
+      description: Paste the corrected text, example, or description if you know it.
+    validations:
+      required: false
+
+  - type: input
+    id: source
+    attributes:
+      label: Source
+      description: Link to official Claude Code docs, release notes, or another authoritative reference.
+      placeholder: https://docs.anthropic.com/...
+    validations:
+      required: false
+
+  - type: dropdown
+    id: affects-env
+    attributes:
+      label: Affected environment(s)
+      multiple: true
+      options:
+        - All environments
+        - Desktop
+        - CLI
+        - VS Code
+        - Cursor
+    validations:
+      required: false
