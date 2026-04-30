@@ -42,6 +42,7 @@ function cheatyBang() {
     decisionTreeId: null,    // active tree's id, or null = picker view
     decisionPath: [],        // stack of node ids visited (last = current)
     aboutOpen: false,
+    categoryInfoItem: null,
     collapsed: {},
     modalItem: null,
     modalEnv: 'cli',
@@ -501,6 +502,18 @@ function cheatyBang() {
 
     openAbout()  { this.aboutOpen = true;  document.body.style.overflow = 'hidden'; },
     closeAbout() { this.aboutOpen = false; document.body.style.overflow = ''; },
+
+    openCategoryInfo(cat) {
+      if (this.modalItem)     this.closeModal({ skipHash: true });
+      if (this.glossaryOpen)  this.closeGlossary({ skipHash: true });
+      if (this.decisionsOpen) this.closeDecisions({ skipHash: true });
+      this.categoryInfoItem = cat;
+      document.body.style.overflow = 'hidden';
+    },
+    closeCategoryInfo() {
+      this.categoryInfoItem = null;
+      document.body.style.overflow = '';
+    },
 
     /** Render the glossary as a Markdown string. */
     glossaryAsMarkdown() {

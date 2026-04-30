@@ -112,6 +112,7 @@
       "title": "Sessions & modes",
       "icon": "layers",
       "description": "How sessions work and the modes you can run them in — interactive REPL, plan-only, auto-accept, and headless one-shot.",
+      "longDescription": "A \"mode\" is the policy that governs how Claude acts — whether it can edit files, ask before each step, or run unattended.\n\nReach for this section when a task feels mismatched to the default: use Plan mode before a risky refactor so Claude maps it out without touching code, Accept Edits mode when you trust the direction and want to stop confirming each save, or Print mode (-p) when you want a one-shot answer from the shell with no interactive loop.\n\nSwitch by typing /plan or /accept-edits, pressing Shift+Tab to cycle, or launching the CLI with the relevant flag. The right mode for the job is usually the most restrictive one that still gets the work done.",
       "items": [
         {
           "id": "interactive",
@@ -199,6 +200,7 @@
       "title": "Slash commands",
       "icon": "terminal",
       "description": "Built-in commands typed with a leading / inside a session — control the session, inspect state, manage memory, run workflows.",
+      "longDescription": "Slash commands are the control panel for an active session — anything the harness can do that you'd otherwise have to remember is exposed as /something.\n\nOpen this section when you forget how to clear context, switch model, see costs, review a diff, or open settings without leaving the prompt. They also cover the small but high-leverage ones: /btw for a side question that doesn't pollute context, /rewind to undo a turn, /add-dir to grant access outside the cwd.\n\nType the command with / at the start of any message; /help lists everything available right now (including custom commands you've added under .claude/commands/). Many take arguments — e.g. /compact <topic>, /review <PR#>, /model opus.",
       "items": [
         { "id": "help",    "title": "/help",    "level": "beginner", "summary": "List commands, shortcuts, and active skills.", "details": "Your first stop when you forget something.", "tags": ["help"],   "example": { "lang": "text", "code": "/help", "note": "" } },
         { "id": "clear",   "title": "/clear",   "level": "beginner", "summary": "Wipe the current conversation; memory and CLAUDE.md remain.", "details": "Resets context only — settings, memory, and connections survive.", "pitfalls": "Doesn't clear CLAUDE.md or settings. If Claude is still doing something you didn't ask for after /clear, the rule lives in CLAUDE.md (or a hook), not the conversation.", "tags": ["clear"],  "example": { "lang": "text", "code": "/clear", "note": "Aliases: /reset, /new" } },
@@ -254,6 +256,7 @@
       "title": "Memory & CLAUDE.md",
       "icon": "brain",
       "description": "How Claude carries instructions across sessions. CLAUDE.md files at the user, project, and sub-folder level compose into a single set of standing rules.",
+      "longDescription": "CLAUDE.md is how you make rules stick across sessions — anything you'd otherwise have to repeat in every prompt belongs here.\n\nUse this section when Claude keeps making the same mistake, when onboarding a new repo, or when you want the same standards to apply to everyone on the team. Typical contents: build/test commands, naming conventions, files to ignore, security rules, links to architecture docs.\n\nFiles are layered and merge automatically: ~/.claude/CLAUDE.md for personal preferences, <repo>/CLAUDE.md (committed) for project conventions, and per-folder CLAUDE.md for narrow scope (e.g. only when editing inside /api). Open them with /memory, or prefix a single message with # to file a one-off rule into the right scope. Keep them short — every line costs context tokens on every turn.",
       "items": [
         {
           "id": "project-claude-md", "title": "Project CLAUDE.md", "level": "beginner",
@@ -298,6 +301,7 @@
       "title": "Quick references & shortcuts",
       "icon": "keyboard",
       "description": "Inline syntax (@, #, !) and keybindings that make daily use fast — file references, memory shortcuts, shell escapes, and mode toggles.",
+      "longDescription": "These are the inline characters and keystrokes that turn a slow conversation into a fast one — @ to attach a file, # to file a memory, ! to escape to the shell, plus the keybindings for plan/accept/cancel and the search/help overlays.\n\nUse this section when you find yourself typing long file paths into prompts, repeating the same instruction across sessions, double-pressing Esc to undo, or reaching for the mouse to do something the keyboard already supports.\n\nThere's nothing to install — these all work the moment you start typing. Worth memorizing the top five (@, #, !, Shift+Tab, Esc-Esc) before going deeper; they pay back the time within a session or two.",
       "items": [
         {
           "id": "at-file", "title": "@ file reference", "level": "mid",
@@ -380,6 +384,7 @@
       "title": "Hooks",
       "icon": "plug",
       "description": "Shell commands the harness runs at lifecycle events. Use them for auto-formatting, logging, blocking unsafe calls, or notifications — anything you don't want to trust the model to remember.",
+      "longDescription": "Hooks are shell commands the harness runs automatically at lifecycle events — before a tool call, after a file edit, when the session starts or ends, when Claude is waiting on you.\n\nUse them when you don't want to trust the model to remember something: auto-format every file on save, log every Bash invocation to a file, block writes to .env or production paths, fire a desktop notification when Claude finishes a long run, or inject extra context at session start.\n\nConfigure under the hooks key in settings.json (project, user, or local scope). A hook that exits non-zero blocks the action and surfaces stderr to Claude — useful for safety gates. Because hooks run shell, they should be small, fast, and idempotent; reach for a sub-agent or skill instead when the logic is non-trivial.",
       "items": [
         {
           "id": "hook-matrix",
@@ -482,6 +487,7 @@
       "title": "MCP servers",
       "icon": "server",
       "description": "Model Context Protocol — an open standard for plugging external systems (GitHub, Linear, databases, your own APIs) into Claude as callable tools.",
+      "longDescription": "MCP (Model Context Protocol) is the open standard for plugging external systems — GitHub, Linear, Slack, Postgres, your own internal APIs — into Claude as callable tools. Once a server is connected, its tools appear alongside built-ins and Claude can use them like any other.\n\nReach for this section when Claude needs to do work outside the local repo: read a Linear ticket, comment on a PR, query a database, post to a channel, or call a service you wrote. Anything that lives behind an API and you'd rather not paste manually is a candidate.\n\nInstall a server once with /mcp (or by editing mcpServers in settings.json), authenticate, and the tools show up in every future session. Project-scoped servers commit with the repo so the team gets them automatically; user-scoped servers stay personal. Vet what you connect — MCP tools can read and write on your behalf.",
       "items": [
         { "id": "mcp-what", "title": "What is MCP?", "level": "mid",
           "summary": "Open protocol for exposing tools/resources to LLMs.",
@@ -522,6 +528,7 @@
       "title": "Sub-agents & skills",
       "icon": "users",
       "description": "Task-specific helpers Claude can spawn. Sub-agents run in their own context and report back; skills are reusable invocable workflows.",
+      "longDescription": "Sub-agents and skills are how you teach Claude *playbooks*. A sub-agent is a scoped helper that runs in a fresh context (so its searches and reads don't pollute your main conversation) and returns a single summary; a skill is a reusable workflow that auto-activates when its description matches what the user is asking for.\n\nUse this section when a task is large or repetitive enough to deserve its own definition: a code-reviewer that always checks the same things, a migration-checker for SQL safety, a release-notes generator, a debugger that follows a fixed reproduce/isolate/diagnose loop. Sub-agents shine on big read-heavy investigations; skills shine on repeatable procedures triggered by intent.\n\nDefine them as Markdown files under .claude/agents/ or .claude/skills/ with frontmatter (name, description, tools, model). Routing is matched on the description, so write that like a sentence the user would actually say (\"audits SQL migrations for safety on large tables\") rather than a feature list.",
       "items": [
         { "id": "explore-agent", "title": "Explore agent", "level": "mid",
           "summary": "Fast, read-only search across the repo.",
@@ -570,6 +577,7 @@
       "title": "Permissions & settings",
       "icon": "sliders",
       "description": "settings.json controls hooks, permissions, env vars, and MCP servers. Three scopes — user, project (committed), local (gitignored) — deep-merge in that order.",
+      "longDescription": "settings.json is the single file that controls everything outside the conversation: which Bash commands are allowed without prompting, which hooks fire, which MCP servers are connected, which env vars Claude sees.\n\nUse this section to stop the permission prompts you keep saying \"yes\" to (allow), lock down a destructive command for safety (deny), share a project's setup with the team (commit .claude/settings.json), or keep secrets and machine-specific paths off the repo (.claude/settings.local.json, gitignored).\n\nThe three scopes — user (~/.claude/settings.json), project (.claude/settings.json), and local (.claude/settings.local.json) — deep-merge in that order, so per-project rules override personal ones, and local overrides both. Edit with /config, or hand-edit the file. Permission patterns use globs (Bash(npm *), Read(./src/**)) — start narrow, widen as you trust a command.",
       "items": [
         { "id": "settings-json", "title": "settings.json basics", "level": "mid",
           "summary": "One JSON file controls hooks, permissions, env, and MCP.",
@@ -626,6 +634,7 @@
       "title": "IDE integration",
       "icon": "code",
       "description": "Native experiences inside VS Code and JetBrains, plus how to use the CLI from Cursor's terminal.",
+      "longDescription": "The IDE integration gives Claude access to your editor's selection, open tabs, diagnostics, and side-panel UI — diffs render inline, file references resolve to the right tab, and you can drive a session without leaving the keyboard.\n\nUse this section when you want diff views in your editor instead of a terminal, want to highlight a region and ask about it, want JetBrains/VS Code shortcuts to trigger Claude, or want diagnostics (TS errors, lint warnings) to flow into the conversation automatically.\n\nInstall the VS Code or JetBrains extension once from the marketplace; the CLI auto-detects when it's launched from inside an IDE terminal. In Cursor, there's no separate extension — open Cursor's integrated terminal and run claude as you would anywhere else; the editor selection is still picked up via @-references.",
       "items": [
         {
           "id": "feature-env-matrix",
@@ -699,6 +708,7 @@
       "title": "Headless & scripting",
       "icon": "code-2",
       "description": "Running Claude one-shot from the shell — git hooks, CI gates, pipelines. Use -p, --output-format, --max-turns.",
+      "longDescription": "\"Headless\" means running Claude one-shot from the shell — no interactive loop, no manual approvals — so it can be wired into git hooks, CI gates, cron jobs, and any pipeline that runs unattended.\n\nUse this section when you want Claude in something automated: a pre-commit lint pass, a PR comment that flags risky migrations, a nightly summary of failing tests, a script that reads stdin and writes a structured response. The mental model: same prompts and skills as interactive mode, just one turn that returns and exits.\n\nThe core flag is -p \"your prompt\" (alias for --print). Pair it with --output-format json for parseable output, --max-turns and --max-budget-usd to bound the run, and --dangerously-skip-permissions only inside an isolated sandbox you trust. Pipe stdin in for input, parse stdout/JSON downstream. CI tip: run the same prompt in plan mode first to inspect what it would do before letting it write.",
       "items": [
         { "id": "p-flag", "title": "claude -p basics", "level": "mid", "envs": ["cli", "cursor"],
           "summary": "One-shot prompts from the shell.",
@@ -751,6 +761,7 @@
       "title": "Integrations & deployments",
       "icon": "globe",
       "description": "Running Claude Code beyond your laptop — GitHub Actions, the Anthropic and Agent SDKs, and Bedrock/Vertex backends.",
+      "longDescription": "These are the ways to run Claude Code *beyond your laptop* — GitHub Actions for in-PR automation, the Anthropic and Agent SDKs for embedding Claude into your own apps, and AWS Bedrock or Google Vertex when keys must stay in your cloud account.\n\nUse this section when you're going from a local tool to a deployed one: a bot that comments on every PR, a custom agent inside an internal product, a scheduled action that opens follow-up issues, or an enterprise rollout where data and credentials must stay inside your VPC.\n\nEach option uses the same prompts, hooks, skills, and CLAUDE.md you wrote locally — only the runtime changes. GitHub Actions: drop in the official action and it runs headless on each event. SDKs: programmatic access to the same model and tools. Bedrock/Vertex: set the relevant env var (CLAUDE_CODE_USE_BEDROCK, CLAUDE_CODE_USE_VERTEX) and Claude routes inference through your account.",
       "items": [
         { "id": "gh-actions", "title": "GitHub Actions: claude-code-action", "level": "pro",
           "summary": "Run Claude Code from CI on PRs, issues, or schedules.",
@@ -791,6 +802,7 @@
       "title": "Workflow recipes",
       "icon": "book-open",
       "description": "End-to-end patterns that combine multiple features — hooks, headless mode, MCP, scheduled agents — into something useful in one go.",
+      "longDescription": "Recipes are end-to-end patterns that wire several features together into something useful — a hook that runs eslint on every save and feeds errors back to Claude, a headless agent triggered nightly by cron, an MCP server consumed by a sub-agent, a /loop watcher that polls a build until it's green.\n\nUse this section when you've got a problem in mind and want a working starting point rather than a primitive. Each recipe shows the moving parts (which hook, which command, which settings.json keys) so you can copy, swap the specifics for yours, and iterate.\n\nRecipes are deliberately a notch above \"single feature\" tutorials — they cross two or three categories on purpose. Read the recipe, follow the links into the individual sections to understand each piece, then adapt. If your workflow doesn't appear here, it usually composes from two recipes that do.",
       "items": [
         {
           "id": "recipe-pr-review",
@@ -878,6 +890,7 @@
       "title": "Power moves",
       "icon": "zap",
       "description": "Advanced moves that compound — parallel tools, /loop monitoring, /schedule for follow-ups, ultrareview, worktree-isolated agents.",
+      "longDescription": "Power moves are the advanced techniques that *compound* — they multiply the leverage of everything else: parallel sub-agents for independent investigations, /loop for polling-style waits, /schedule for follow-up work that fires days or weeks later, ultrareview for multi-agent code review, worktree-isolated agents that won't touch your working tree.\n\nUse this section once the basics are second nature and you want to scale. Common moments: you need five investigations done in parallel and don't want to wait serially; you've shipped a feature flag and want a check-in agent in two weeks to clean up; you want to let a long task chew on its own branch in a worktree while you keep coding on main.\n\nNothing here changes what Claude *can* do — it changes how much of it you can do at once and how little you have to remember. Pick one technique to try per week and let muscle memory build; these are the tools that turn Claude from a copilot into infrastructure.",
       "items": [
         { "id": "parallel-tools", "title": "Encourage parallel tool calls", "level": "pro",
           "summary": "Big speedup — Claude can run independent tools concurrently.",
